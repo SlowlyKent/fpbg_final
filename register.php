@@ -1,7 +1,8 @@
 <?php
 session_start();
 include 'connect.php'; // Ensure this file has correct database connection
-
+//test
+//sample adjustment
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if form fields are set
     if (isset($_POST['username'], $_POST['password'], $_POST['confirm_password'])) {
