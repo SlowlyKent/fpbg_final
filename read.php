@@ -16,10 +16,12 @@ if (!$result) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
+    <link rel="stylesheet" href="read.css">
 </head>
 <body>
+    <h1 class="logo">FPBG<br> STOCK</h1>    
     <h2>Registered Users</h2>
-    <table border="1">
+    <table>
         <tr>
             <th>User ID</th>
             <th>Username</th>

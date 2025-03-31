@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "fpbg_final"; // Change to your new database
+$database = "fpbg_final";// database
 
 $conn = new mysqli($servername, $username, $password, $database);
 

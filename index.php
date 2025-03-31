@@ -1,46 +1,40 @@
 <?php
-
 session_start();
-include 'connect.php'; // Database connection
+include 'connect.php';
 
-
-$error = ""; // Initialize the variable to prevent warnings
-
+$error = ""; // Initialize the error variable to avoid undefined warnings.
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    echo "<pre>";
-    print_r($_POST); // Show what is being sent
-    echo "</pre>";
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $sql = "SELECT user_id, username, password FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if (!empty($username) && !empty($password)) {
-        $stmt = $conn->prepare("SELECT user_id, password FROM users WHERE username = ?");
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    if ($result->num_rows === 1) {
+        $row = $result->fetch_assoc();
+        $stored_hash = $row['password'];
 
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            echo "Stored Hash: " . $row['password'] . "<br>"; // Debug stored hash
-            echo "Entered Password: " . $password . "<br>"; // Debug entered password
-            
-            if (password_verify($password, $row['password'])) { 
-                $_SESSION['user_id'] = $row['user_id'];
-                header("Location: dashboard.php");
-                exit();
-            } else {
-                $error = "Incorrect password!";
-            }
+        if (password_verify($password, $stored_hash)) {
+            $_SESSION['user_id'] = $row['user_id'];
+            $_SESSION['username'] = $row['username'];
+            header("Location: dashboard.php");
+            exit;
         } else {
-            $error = "User not found!";
+            $error = "Incorrect password!";
         }
     } else {
-        $error = "Please enter both username and password!";
+        $error = "User not found!";
     }
+
+    $stmt->close();
 }
+$conn->close();
 ?>
+
 
 
 
@@ -65,12 +59,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form method="POST" action="index.php">
     <input type="text" name="username" placeholder="username" required>
     <input type="password" name="password" placeholder="password" required>
-    <a href="forgot_password.php" class="forgot-password">Forgot Password?</a>
+   
 
     <button type="submit" class="login-btn">Sign In</button>
 
 </form>
-       
+         <?php if (isset($error)) { echo "<p style='color:red;'>$error</p>"; } ?>
     </div>
 </body>
 </html>

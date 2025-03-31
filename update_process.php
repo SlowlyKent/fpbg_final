@@ -1,27 +1,36 @@
 <?php
-include 'connect.php'; // Ensure database connection
+session_start();
+include 'connect.php'; // Ensure this file correctly connects to the database
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user_id = $_POST['user_id'];
-    $username = trim($_POST['username']);
+    if (isset($_POST['user_id'], $_POST['username'])) {
+        $user_id = $_POST['user_id'];
+        $username = trim($_POST['username']);
+        $new_password = trim($_POST['new_password']); // Fix: Match the input name from update.php
 
-    // Validate if username is empty
-    if (empty($username)) {
-        echo "<script>alert('Username cannot be empty!'); window.location.href='update.php?user_id=$user_id';</script>";
-        exit();
-    }
+        if (!empty($new_password)) {
+            // Fix: Use new_password correctly
+            $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+            $sql = "UPDATE users SET username=?, password=? WHERE user_id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssi", $username, $hashed_password, $user_id);
+        } else {
+            // If no new password is provided, update only the username
+            $sql = "UPDATE users SET username=? WHERE user_id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $username, $user_id);
+        }
 
-    // Update user in the database
-    $stmt = $conn->prepare("UPDATE users SET username = ? WHERE user_id = ?");
-    $stmt->bind_param("si", $username, $user_id);
+        if ($stmt->execute()) {
+            echo "<script>alert('User updated successfully!'); window.location.href='read.php';</script>";
+        } else {
+            echo "<script>alert('Error updating user!'); window.location.href='update.php?user_id=$user_id';</script>";
+        }
 
-    if ($stmt->execute()) {
-        echo "<script>alert('User updated successfully!'); window.location.href='read.php';</script>";
+        $stmt->close();
     } else {
-        echo "<script>alert('Update failed!'); window.location.href='update.php?user_id=$user_id';</script>";
+        echo "<script>alert('Invalid request! Missing user_id or username.'); window.location.href='read.php';</script>";
     }
-
-    $stmt->close();
 }
 
 $conn->close();

@@ -30,13 +30,20 @@ if (isset($_GET['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User</title>
+    <link rel="stylesheet" href="update.css">
+    <h1 class="logo">FPBG<br> STOCK</h1> 
 </head>
 <body>
+    <div class="edit-container">
     <h2>Edit User</h2>
     <form action="update_process.php" method="POST">
+        <label>Update Name:</label>
         <input type="hidden" name="user_id" value="<?= $user_id; ?>">
         <input type="text" name="username" value="<?= $user['username']; ?>" required>
-        <button type="submit">Update</button>
+        <label>New Password (leave blank to keep current password):</label>
+        <input type="password" name="new_password" placeholder="Enter new password">
+
+        <button type="submit">Update</button> 
     </form>
 </body>
 </html>
