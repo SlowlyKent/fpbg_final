@@ -1,13 +1,12 @@
 {
-    "name": "fpbg_final",
-    "description": "An inventory management system with JWT authentication",
-    "require": {
-      "firebase/php-jwt": "^6.0"
-    },
-    "autoload": {
-      "psr-4": {
-        "FpbgFinal\\": "src/"
-      }
+  "name": "fpbg/final-api",
+  "description": "API for fpbg_final project",
+  "require": {
+    "firebase/php-jwt": "^6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Fpbg\\": "src/"
     }
   }
-  
+}
