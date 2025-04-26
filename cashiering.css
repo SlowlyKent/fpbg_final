@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    margin: 20px;
+    color: #000000;
+    
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+.header .fpbg {
+    font-size: 30px;
+    color: #007bff;
+}
+.header .stock {
+    font-size: 14px;
+    color: #007bff;
+    margin-top: -10px;
+}
+.header .cashiering {
+    font-size: 20px;
+    color: #007bff;
+    text-align: center;
+    flex-grow: 1;
+}
+.total {
+    background: #007bff;
+    color: white;
+    text-align: right;
+    font-size: 30px;
+    padding: 10px;
+}
+.order-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.order-list th, .order-list td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.order-list th {
+    background: #007bff;
+    color: white;
+}
+.payment {
+    margin-top: 20px;
+}
+.payment label {
+    display: block;
+    margin: 5px 0;
+}
+.buttons {
+    margin-top: 20px;
+}
+button {
+    padding: 10px;
+    margin-right: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
