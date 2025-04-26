@@ -3,10 +3,10 @@ session_start();
 include 'connect.php'; // Database connection
 
 if (!isset($_SESSION['user_id'])) { // Check if the user is logged in
-
     header("Location: index.php");
     exit();
 }
+$user_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 ?>
 
 <!DOCTYPE html>
