@@ -2,13 +2,21 @@
 session_start();
 include 'connect.php';
 
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) { 
+    header("Location: index.php");
+    exit();
+}
+
+
 $error = ""; // Initialize the error variable to avoid undefined warnings.
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $role =$_POST['role'];
 
-    $sql = "SELECT user_id, username, password FROM users WHERE username = ?";
+    $sql = "SELECT user_id, username, password, role FROM users WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $username);
     $stmt->execute();
@@ -21,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $stored_hash)) {
             $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['username'] = $row['username'];
+            $_SESSION['role'] = $row['role'];
             header("Location: dashboard.php");
             exit;
         } else {
