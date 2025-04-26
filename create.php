@@ -8,6 +8,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
         $confirm_password = trim($_POST['confirm_password']);
+        $role = trim($_POST['role']);
+
 
         // Check if passwords match
         if ($password !== $confirm_password) {
@@ -30,10 +32,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash password for security
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-        // Insert user into database
-        $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-        $stmt->bind_param("ss", $username, $hashed_password);
 
+        // Insert user into database
+        $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+    if (!$stmt) {
+    die("Prepare failed: " . $conn->error);  
+        }
+
+$stmt->bind_param("sss", $username, $hashed_password, $role);
         if ($stmt->execute()) {
             echo "<script>alert('Registration successful! Please log in.'); window.location.href='index.php';</script>";
         } else {
@@ -68,6 +74,16 @@ $conn->close();
         <input type="text" name="username" placeholder="Enter Username" required>
         <input type="password" name="password" placeholder="Enter Password" required>
         <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+       
+        <select name="role" required>
+            <option value="" disabled selected>Select Role</option>
+            <<option value="admin">Admin</option>
+            <option value="staff">Staff</option>
+            </select>
+    
+       
+       
+       
         <button type="submit">Register</button>
     </form>
 </div>
