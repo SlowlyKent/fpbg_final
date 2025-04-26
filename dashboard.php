@@ -1,14 +1,12 @@
 <?php
 session_start();
-include 'connect.php'; // Database connection
-
-if (!isset($_SESSION['user_id'])) { // Check if the user is logged in
-    header("Location: index.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header('Location: index.php');
     exit();
 }
-$user_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 ?>
 
+<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
