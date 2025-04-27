@@ -1,5 +1,16 @@
 <?php
-include 'connect.php'; // Ensure database connection
+session_start();
+include 'connect.php';
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
+    header("Location: index.php");
+    exit();
+}
+$role = $_SESSION['role'];
+if ($role !== 'cashiering') {
+    header("Location: index.php");
+    exit();
+}
 
 $sql = "SELECT * FROM inventory";
 $result = $conn->query($sql);

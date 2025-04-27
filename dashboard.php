@@ -1,14 +1,12 @@
 <?php
 session_start();
-include 'connect.php'; // Database connection
-
-if (!isset($_SESSION['user_id'])) { // Check if the user is logged in
-
-    header("Location: index.php");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header('Location: index.php');
     exit();
 }
 ?>
 
+<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,11 +26,15 @@ if (!isset($_SESSION['user_id'])) { // Check if the user is logged in
     <div class="sidebar"><!-- Sidebar -->
         <h2>FPBG STOCK</h2>
         <ul>
+        <?php if ($_SESSION['role'] === 'admin'): ?>
         <li><a href="#" onclick="loadPage('dashboard.php')">Dashboard</a></li>
         <li><a href="#" onclick="loadPage('inventory.php')">Inventory</a></li>
-    <li><a href="#" onclick="loadPage('stock_in.php')">Stock In</a></li>
-    <li><a href="#" onclick="loadPage('stock_out.php')">Stock Out</a></li>
-    <li><a href="#" onclick="loadPage('transaction.php')">Transaction</a></li>
+        <li><a href="#" onclick="loadPage('stock_in.php')">Stock In</a></li>
+        <li><a href="#" onclick="loadPage('stock_out.php')">Stock Out</a></li>
+        <li><a href="#" onclick="loadPage('transaction.php')">Transaction</a></li>
+        <?php elseif ($_SESSION['role'] === 'staff'): ?>
+        <li><a href="#" onclick="loadPage('transaction.php')">Cashiering</a></li>
+        <?php endif; ?>
         </ul>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
