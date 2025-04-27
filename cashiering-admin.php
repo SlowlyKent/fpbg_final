@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 
 $role = $_SESSION['role'];
 
-
 if ($role !== 'admin' && $role !== 'staff') {
     header("Location: index.php");
     exit();
@@ -24,7 +23,9 @@ if ($role !== 'admin' && $role !== 'staff') {
     <link rel="stylesheet" href="cashiering.css">
 </head>
 <body>
-     <button class="logout-button" onclick="logout()">Logout</button>
+    <!-- Updated button text and functionality to redirect to dashboard -->
+    <button class="logout-button" onclick="window.location.href='dashboard.php';">Back to Dashboard</button>
+    
     <div class="container">
         <div class="header">
             <div class="fpbg">FPBG</div>
@@ -66,10 +67,9 @@ if ($role !== 'admin' && $role !== 'staff') {
         <div class="buttons">
             <button onclick="processPayment()">Pay</button>
             <button onclick="resetSystem()">Reset</button>
-            
         </div>
     </div>
     
-    <script src="cashiering.js"></script>
+    <script src="cashiering-admin.js"></script>
 </body>
 </html>

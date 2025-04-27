@@ -24,7 +24,9 @@ if ($role !== 'admin' && $role !== 'staff') {
     <link rel="stylesheet" href="cashiering.css">
 </head>
 <body>
-     <button class="logout-button" onclick="logout()">Logout</button>
+<form method="POST" action="logout.php">
+    <button type="submit">Log Out</button>
+</form>
     <div class="container">
         <div class="header">
             <div class="fpbg">FPBG</div>
@@ -70,6 +72,6 @@ if ($role !== 'admin' && $role !== 'staff') {
         </div>
     </div>
     
-    <script src="cashiering.js"></script>
+    <script src="cashiering-staff.js"></script>
 </body>
 </html>
