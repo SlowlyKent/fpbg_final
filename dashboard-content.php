@@ -1,12 +1,7 @@
-
-
-        <div class="charts" id="chartsSection">
-            <div class="chart-container">
-                <canvas id="pieChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="barChart"></canvas>
-            </div>
-        </div>
-
-        <div id="contentContainer"></div>
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header('Location: index.php');
+    exit();
+}
+?>
