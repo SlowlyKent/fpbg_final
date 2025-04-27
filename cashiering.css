@@ -77,3 +77,12 @@ button {
 button:hover {
     background: #0056b3;
 }
+.back-to-dashboard {
+    margin: 20px;
+    text-align: center;
+}
+
+.log-out {
+    margin: 20px;
+    text-align: center;
+}
