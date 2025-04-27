@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $checkStmt->store_result();
 
         if ($checkStmt->num_rows > 0) {
-            echo "<script>alert('Username already taken!'); window.location.href='register.php';</script>";
+            echo "<script>alert('Username already taken!'); window.location.href='create.php';</script>";
             exit();
         }
         $checkStmt->close();
