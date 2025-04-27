@@ -1,6 +1,10 @@
 <?php
 include 'connect.php'; // Ensure database connection
 
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
+    exit();
+}
 if (isset($_GET['user_id'])) {
     $user_id = $_GET['user_id'];
 

@@ -1,18 +1,6 @@
 <?php
 session_start();
 include ("connect.php");
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'staff')) {
-    header('Location: index.php');
-    exit();
-}
-
-$role = $_SESSION['role'];
-
-
-if ($role !== 'admin' && $role !== 'staff') {
-    header("Location: index.php");
-    exit();
-}
 ?>
 
 <!DOCTYPE html>

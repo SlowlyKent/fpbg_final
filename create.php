@@ -2,6 +2,12 @@
 session_start();
 include 'connect.php'; 
 
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
+    exit();
+}
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     if (isset($_POST['username'], $_POST['password'], $_POST['confirm_password'], $_POST['role'])) {
@@ -12,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
        
         if ($password !== $confirm_password) {
-            echo "<script>alert('Passwords do not match!'); window.location.href='register.php';</script>";
+            echo "<script>alert('Passwords do not match!'); window.location.href='create.php';</script>";
             exit();
         }
 
@@ -23,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $checkStmt->store_result();
 
         if ($checkStmt->num_rows > 0) {
-            echo "<script>alert('Username already taken!'); window.location.href='register.php';</script>";
+            echo "<script>alert('Username already taken!'); window.location.href='create.php';</script>";
             exit();
         }
         $checkStmt->close();
@@ -32,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
      
-        $stmt = $conn->prepare("INSERT INTO users(username, password, role) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO user_final (username, password, role) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $username, $hashed_password, $role);  
 
         if ($stmt->execute()) {

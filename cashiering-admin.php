@@ -1,8 +1,8 @@
 <?php
 session_start();
 include ("connect.php");
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'staff')) {
-    header('Location: index.php');
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
     exit();
 }
 
