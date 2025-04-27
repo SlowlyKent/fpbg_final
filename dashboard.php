@@ -26,12 +26,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         <?php if ($_SESSION['role'] === 'admin'): ?>
             <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
 
-            <li><a href="#" onclick="loadPage('cashiering.php', event, true)">Cashiering</a></li>
-            <li><a href="#" onclick="loadPage('dashboard-content.php', event, false)">Dashboard</a></li>
-            <li><a href="#" onclick="loadPage('inventory.php', event, false)">Inventory</a></li>
-            <li><a href="#" onclick="loadPage('stock_in.php', event, false)">Stock In</a></li>
-            <li><a href="#" onclick="loadPage('stock_out.php', event, false)">Stock Out</a></li>
-            <li><a href="#" onclick="loadPage('transaction.php', event, false)">Transaction</a></li>
+    <li><a href="cashiering-admin.php">Cashiering</a></li>
+    <li><a href="dashboard.php">Dashboard</a></li>
+    <li><a href="inventory.php">Inventory</a></li>
+    <li><a href="stock_in.php">Stock In</a></li>
+    <li><a href="stock_out.php">Stock Out</a></li>
+    <li><a href="transaction.php">Transaction</a></li>
         <?php elseif ($_SESSION['role'] === 'staff'): ?>
             <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
         <?php endif; ?>

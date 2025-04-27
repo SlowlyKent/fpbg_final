@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+include 'connect.php'; 
 
 $error = '';
 
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header("Location: dashboard.php");
                     exit();
                 } else if ($user['role'] == 'staff') {
-                    header("Location: cashiering.php");
+                    header("Location: cashiering-staff.php");
                     exit();
                 } else {
                     $error = "Invalid role.";
