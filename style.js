@@ -65,6 +65,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Clickable Cashiering Button
+    document.getElementById("cashieringButton").addEventListener("click", function() {
+        window.location.href = "cashiering.php"; // Redirect to cashiering.php
+    });
+
     // Password Toggle
     const eyeIcon = document.getElementById("eye");
     const passwordField = document.getElementById("password");

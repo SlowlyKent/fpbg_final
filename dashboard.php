@@ -7,61 +7,59 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 ?>
 
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="dashboard.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for graphs -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
 <body>
 
-<div class="dashboard-container">
-    
-    <div class="sidebar"><!-- Sidebar -->
+<div class="dashboard-container" id="dashboardContainer">
+    <div class="sidebar" id="sidebar">
         <h2>FPBG STOCK</h2>
         <ul>
         <?php if ($_SESSION['role'] === 'admin'): ?>
-        <li><a href="#" onclick="loadPage('dashboard.php')">Dashboard</a></li>
-        <li><a href="#" onclick="loadPage('inventory.php')">Inventory</a></li>
-        <li><a href="#" onclick="loadPage('stock_in.php')">Stock In</a></li>
-        <li><a href="#" onclick="loadPage('stock_out.php')">Stock Out</a></li>
-        <li><a href="#" onclick="loadPage('transaction.php')">Transaction</a></li>
+            <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
+
+            <li><a href="#" onclick="loadPage('cashiering.php', event, true)">Cashiering</a></li>
+            <li><a href="#" onclick="loadPage('dashboard-content.php', event, false)">Dashboard</a></li>
+            <li><a href="#" onclick="loadPage('inventory.php', event, false)">Inventory</a></li>
+            <li><a href="#" onclick="loadPage('stock_in.php', event, false)">Stock In</a></li>
+            <li><a href="#" onclick="loadPage('stock_out.php', event, false)">Stock Out</a></li>
+            <li><a href="#" onclick="loadPage('transaction.php', event, false)">Transaction</a></li>
         <?php elseif ($_SESSION['role'] === 'staff'): ?>
-        <li><a href="#" onclick="loadPage('transaction.php')">Cashiering</a></li>
+            <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
         <?php endif; ?>
         </ul>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-    <div class="notification-container">
-    <div class="notification-icon" onclick="toggleNotifications()">
-        <i class="fa-solid fa-bell"></i> 
-        <span class="notification-badge" id="notifBadge">3</span>
-    </div>
-    <div class="notification-dropdown" id="notifDropdown">
-        <h4>Notifications</h4>
-        <ul id="notifList">
-            <li>New stock added</li>
-            <li>Stock running low</li>
-            <li>Transaction completed</li>
-        </ul>
-    </div>
-</div>
-        <!-- Search Bar -->
-        <div class="search-bar">
+    <div class="main-content" id="mainContent">
+        <div class="notification-container" id="notificationContainer">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notification-badge" id="notifBadge">3</span>
+            </div>
+            <div class="notification-dropdown" id="notifDropdown">
+                <h4>Notifications</h4>
+                <ul id="notifList">
+                    <li>New stock added</li>
+                    <li>Stock running low</li>
+                    <li>Transaction completed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="search-bar" id="searchBar">
             <input type="text" placeholder="Search">
         </div>
 
-        <!-- Statistic Cards -->
-        <div class="stat-cards">
+        <div id="statCards" class="stat-cards">
             <div class="stat-card">
                 <h3>₱20,993</h3>
                 <p>Total Sales</p>
@@ -76,79 +74,88 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="charts">
+        <div class="charts" id="chartsSection">
             <div class="chart-container">
-                
                 <canvas id="pieChart"></canvas>
             </div>
             <div class="chart-container">
-                
                 <canvas id="barChart"></canvas>
             </div>
         </div>
+
+        <!-- This is where pages will load -->
+        <div id="contentContainer"></div>
     </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    loadPage('dashboard-content.php'); // Load default dashboard content
+    loadPage('dashboard-content.php');
 });
 
-// Function to load pages dynamically via AJAX
-function loadPage(page, event = null) {
-    if (event) {
-        event.preventDefault(); // Prevent default link behavior
-    }
+// Load Pages (fullscreen if cashiering)
+function loadPage(page, event = null, isCashiering = false) {
+    if (event) event.preventDefault();
 
     var contentContainer = document.getElementById("contentContainer");
-    if (!contentContainer) {
-        console.error("Error: contentContainer not found!");
-        return;
+    if (!contentContainer) return;
+
+    if (isCashiering) {
+        // HIDE everything except cashiering content
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('notificationContainer').style.display = 'none';
+        document.getElementById('searchBar').style.display = 'none';
+        document.getElementById('statCards').style.display = 'none';
+        document.getElementById('chartsSection').style.display = 'none';
+
+        // Clear dashboard background
+        contentContainer.style.width = "100%";
+        contentContainer.style.margin = "0 auto";
+    } else {
+        // NORMAL dashboard view
+        document.getElementById('sidebar').style.display = 'block';
+        document.getElementById('notificationContainer').style.display = 'flex';
+        document.getElementById('searchBar').style.display = 'block';
+        document.getElementById('statCards').style.display = 'flex';
+        document.getElementById('chartsSection').style.display = 'flex';
+
+        contentContainer.style.width = "";
+        contentContainer.style.margin = "";
     }
 
-    contentContainer.innerHTML = "<p>Loading...</p>"; // Show loading text
+    contentContainer.innerHTML = "<p>Loading...</p>";
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", page, true);
-    
     xhr.onload = function () {
         if (xhr.status === 200) {
-            contentContainer.innerHTML = xhr.responseText; // Load page content
-        } else if (xhr.status === 404) {
-            console.error("Error: Page not found (" + page + ")");
-            contentContainer.innerHTML = "<p style='color: red;'>Error: Page not found (404). Please check the filename.</p>";
+            contentContainer.innerHTML = xhr.responseText;
         } else {
-            console.error("Error loading " + page + ": " + xhr.statusText);
-            contentContainer.innerHTML = "<p style='color: red;'>Error loading page. Please try again.</p>";
+            contentContainer.innerHTML = "<p style='color: red;'>Error loading page.</p>";
         }
     };
-
     xhr.onerror = function () {
-        console.error("Network error while loading " + page);
-        contentContainer.innerHTML = "<p style='color: red;'>Network error. Please check your connection.</p>";
+        contentContainer.innerHTML = "<p style='color: red;'>Network error.</p>";
     };
-
     xhr.send();
 }
 
-// Notification Dropdown Toggle
+// Notification Toggle
 function toggleNotifications() {
     var dropdown = document.getElementById("notifDropdown");
     dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 }
 
-// Hide dropdown when clicking outside
+// Hide dropdown outside click
 document.addEventListener("click", function (event) {
     var dropdown = document.getElementById("notifDropdown");
     var icon = document.querySelector(".notification-icon");
-
     if (dropdown && icon && !dropdown.contains(event.target) && !icon.contains(event.target)) {
         dropdown.style.display = "none";
     }
 });
 
-// Load Charts After Page Load
+// Chart.js Initialization
 document.addEventListener("DOMContentLoaded", function() {
     const pieCanvas = document.getElementById('pieChart');
     const barCanvas = document.getElementById('barChart');
@@ -157,7 +164,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const pieCtx = pieCanvas.getContext('2d');
         const barCtx = barCanvas.getContext('2d');
 
-        // Pie Chart with Title
         new Chart(pieCtx, {
             type: 'pie',
             data: {
@@ -171,22 +177,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Cost vs. Revenue',
-                        color: '#000000', // Black title color
-                        font: { size: 16 }
-                    },
-                    legend: {
-                        labels: {
-                            color: '#000000' // Black legend labels
-                        }
-                    }
+                    title: { display: true, text: 'Cost vs Revenue', color: '#000', font: { size: 16 } },
+                    legend: { labels: { color: '#000' } }
                 }
             }
         });
 
-        // Bar Chart with Title
         new Chart(barCtx, {
             type: 'bar',
             data: {
@@ -201,29 +197,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: {
-                        display: true,
-                        text: 'Monthly Sales Report',
-                        color: '#000000', // Black title color
-                        font: { size: 16 }
-                    },
-                    legend: {
-                        labels: {
-                            color: '#000000' // Black legend labels
-                        }
-                    }
+                    title: { display: true, text: 'Monthly Sales Report', color: '#000', font: { size: 16 } },
+                    legend: { labels: { color: '#000' } }
                 },
                 scales: {
-                    x: {
-                        ticks: {
-                            color: '#000000' // Black X-axis labels
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            color: '#000000' // Black Y-axis labels
-                        }
-                    }
+                    x: { ticks: { color: '#000' } },
+                    y: { ticks: { color: '#000' } }
                 }
             }
         });
