@@ -7,11 +7,31 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
+    }
+    $sql = "SELECT user_id, username, password FROM user_final WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $row = $result->fetch_assoc();
+        $stored_hash = $row['password'];
+
+        if (password_verify($password, $stored_hash)) {
+            $_SESSION['user_id'] = $row['user_id'];
+            $_SESSION['username'] = $row['username'];
+            header("Location: dashboard.php");
+            exit;
+        } else {
+            $error = "Incorrect password!";
+        }
 
     if (empty($username) || empty($password)) {
         $error = "Please fill in all fields.";
+
     } else {
-        $stmt = $conn->prepare("SELECT user_id, username, password, role FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT user_id, username, password, role FROM user_final WHERE username = ?");
         $stmt->bind_param('s', $username);
         $stmt->execute();
         $result = $stmt->get_result();
