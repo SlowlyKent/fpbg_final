@@ -1,7 +1,11 @@
 <?php
-include 'connect.php'; // Ensure database connection
+include 'connect.php'; 
 
-// Check if user_id is passed
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
+    exit();
+}
+
 if (isset($_GET['user_id'])) {
     $user_id = $_GET['user_id'];
 

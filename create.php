@@ -2,6 +2,12 @@
 session_start();
 include 'connect.php'; 
 
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
+    exit();
+}
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     if (isset($_POST['username'], $_POST['password'], $_POST['confirm_password'], $_POST['role'])) {

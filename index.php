@@ -28,13 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
        
         if (password_verify($password, $stored_hash)) {
-            $_SESSION['user_id'] = $row['user_id']; // Change to user_id
+            $_SESSION['user_id'] = $row['user_id']; 
             $_SESSION['username'] = $row['username'];
             $_SESSION['role'] = $row['role'];
 
             
 
-           
+           $role =$_SESSION['role'];
             if ($row['role'] == 'admin') {
                 header("Location: dashboard.php");
                 exit();

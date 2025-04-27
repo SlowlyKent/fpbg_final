@@ -1,7 +1,13 @@
 <?php
 include 'connect.php'; 
 
-$sql = "SELECT user_id, username FROM users"; 
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
+    header('Location: permission-denied.php');
+    exit();
+}
+
+
+$sql = "SELECT user_id, username, role FROM users"; 
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -39,6 +45,7 @@ if (isset($_POST['reset'])) {
             <tr>
                 <th>User ID</th>
                 <th>Username</th>
+                <th>Role</th>
                 <th>Actions</th>
             </tr>
 
@@ -48,6 +55,7 @@ if (isset($_POST['reset'])) {
                     echo "<tr>
                             <td>{$row['user_id']}</td>
                             <td>{$row['username']}</td>
+                            <td>{$row['role']}</td>
                             <td>
                                 <a href='update.php?user_id={$row['user_id']}'>Edit</a> | 
                                 <a href='delete.php?user_id={$row['user_id']}' onclick='return confirm(\"Are you sure you want to delete this user?\")'>Delete</a>
