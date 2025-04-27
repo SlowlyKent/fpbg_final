@@ -12,12 +12,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
        
         if ($password !== $confirm_password) {
-            echo "<script>alert('Passwords do not match!'); window.location.href='register.php';</script>";
+            echo "<script>alert('Passwords do not match!'); window.location.href='create.php';</script>";
             exit();
         }
 
      
-        $checkStmt = $conn->prepare("SELECT user_id FROM user_final WHERE username = ?");
+        $checkStmt = $conn->prepare("SELECT user_id FROM users WHERE username = ?");
         $checkStmt->bind_param("s", $username);
         $checkStmt->execute();
         $checkStmt->store_result();
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
      
-        $stmt = $conn->prepare("INSERT INTO user_final (username, password, role) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $username, $hashed_password, $role);  
 
         if ($stmt->execute()) {
