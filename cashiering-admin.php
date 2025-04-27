@@ -23,7 +23,7 @@ if ($role !== 'admin' && $role !== 'staff') {
     <link rel="stylesheet" href="cashiering.css">
 </head>
 <body>
-    <!-- Updated button text and functionality to redirect to dashboard -->
+    
     <button class="logout-button" onclick="window.location.href='dashboard.php';">Back to Dashboard</button>
     
     <div class="container">

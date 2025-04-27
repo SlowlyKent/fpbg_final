@@ -1,33 +1,18 @@
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;
-    flex-direction: column;
-}
-
-/* Container for Table */
-.container {
-    width: 200px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+/* Ensure that the table wrapper is scrollable */
+.table-wrapper {
+    max-height: 400px; /* Set the height you want for the scrollable area */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    overflow-x: auto;  /* Enable horizontal scrolling if needed */
     margin-top: 20px;
 }
 
 /* Table Styling */
 table {
-    width: 800px;
-    border-collapse: collapse, black;
-    margin: 20px 0;
+    width: 100%;
+    border-collapse: collapse;
     font-size: 18px;
     text-align: left;
     border-radius: 10px;
-    overflow: hidden;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -44,9 +29,6 @@ td {
     padding: 10px;
     border-bottom: 1px solid #ddd;
 }
-
-
-
 
 /* Action Links */
 td a {
@@ -73,6 +55,7 @@ td a:hover {
     opacity: 0.8;
 }
 
+/* Logo Styling */
 .logo {
     position: absolute;
     top: 20px;
