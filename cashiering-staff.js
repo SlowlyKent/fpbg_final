@@ -1,5 +1,7 @@
-let orders= []
-
+let products = {
+    "4904550592571": { name: "Flash Disk 8GB", price: 50.00 },
+    "1234567890123": { name: "Anti-Rust Pan", price: 145.00 }
+};
 let cart = [];
 
 function addProduct() {

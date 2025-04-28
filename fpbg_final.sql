@@ -45,7 +45,8 @@ CREATE TABLE `inventory` (
 -- Table structure for table `products`
 --
 
-CREATE TABLE `products` (
+
+) ENGINE=InnoDB DEFACREATE TABLE `products` (
   `product_id` int(11) NOT NULL,
   `product_name` varchar(255) NOT NULL,
   `stock_quantity` int(11) NOT NULL,
@@ -54,8 +55,7 @@ CREATE TABLE `products` (
   `cost_price` decimal(10,2) NOT NULL,
   `selling_price` decimal(10,2) NOT NULL,
   `stock_status` enum('in stock','out of stock','low stock') NOT NULL,
-  `expiration_date` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `expiration_date` date DEFAULT NULLULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `products`
