@@ -5,31 +5,31 @@ let products = {
 let cart = [];
 
 function addProduct() {
-    let barcode = document.getElementById("barcode").value;
-    let quantity = parseInt(document.getElementById("quantity").value);
+    var barcode = document.getElementById("barcode").value;
+    var quantity = parseInt(document.getElementById("quantity").value);
 
-    if (!products[barcode]) {
-        alert("Product not found!");
+    if (barcode === ''|| quantity <= 0){
+        alert('Please enter valid barcode and quantity.');
         return;
     }
 
-    if (quantity <= 0) {
-        alert("Quantity must be at least 1");
-        return;
-    }
+     var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'fetch-product.php', true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.onload = function () {
+        if (this.status == 200) {
+            var product = JSON.parse(this.responseText);
 
-    let productIndex = cart.findIndex(item => item.barcode === barcode);
-
-    if (productIndex !== -1) {
-        cart[productIndex].quantity += quantity;
-    } else {
-        cart.push({ ...products[barcode], quantity, barcode });
-    }
-
-    updateTable();
-    document.getElementById("barcode").value = "";
-    document.getElementById("quantity").value = "1";
-}
+            if (product) {
+                addProductToTable(product, quantity);
+                updateTotal();
+            } else {
+                alert('Product not found!');
+            }
+        }
+    };
+    xhr.send('barcode=' + barcode);
+}   
 
 function updateTable() {
     let table = document.getElementById("orderTable");
@@ -73,9 +73,34 @@ function updateChange() {
 }
 
 function processPayment() {
-    alert("Payment Successful! Change: $" + document.getElementById("change").innerText);
-    resetSystem();
+    var orders = []; 
+
+    var discount = document.getElementById('discount').value;
+    var paidAmount = document.getElementById('paidAmount').value;
+    var totalAmount = document.getElementById('payableAmount').textContent;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'process-payment.php', true);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.onload = function () {
+        if (this.status == 200) {
+            var response = JSON.parse(this.responseText);
+            if (response.status == 'success') {
+                alert('Payment successful!');
+                resetSystem();
+            } else {
+                alert('Payment failed.');
+            }
+        }
+    };
+    xhr.send(JSON.stringify({
+        orders: orders,
+        discount: discount,
+        paidAmount: paidAmount,
+        totalAmount: totalAmount
+    }));
 }
+
 
 function resetSystem() {
     cart = [];
