@@ -57,17 +57,26 @@ $result = $conn->query($sql);
                 </tr>
             </thead>
             <tbody>
+    <?php if ($result->num_rows > 0): ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['product_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['product_name']); ?></td>
+                <td><?php echo htmlspecialchars($row['brand']); ?></td>
+                <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
+                <td><?php echo htmlspecialchars($row['unit_of_measure']); ?></td>
+                <td><?php echo htmlspecialchars($row['category']); ?></td>
+                <td><?php echo htmlspecialchars($row['cost_price']); ?></td>
+                <td><?php echo htmlspecialchars($row['selling_price']); ?></td>
+                <td><?php echo htmlspecialchars($row['stock_status']); ?></td>
+                <td><?php echo htmlspecialchars($row['expiration_date']); ?></td>
             </tr>
-                <tr>
-                    <td>01</td><td>Nuggets</td><td>Bingo</td><td>10</td><td>grams</td><td>Chicken</td><td>60</td><td>65</td>
-                    <td><span class="status outofstock">Out of Stock</span></td><td>08/10/25</td>
-                </tr>
-                <tr>
-                    <td>02</td><td>Tocino</td><td>Virginia</td><td>23</td><td>grams</td><td>Pork</td><td>110</td><td>120</td>
-                    <td><span class="status normal">Normal</span></td><td>08/10/25</td>
-                </tr>
-                <tr>
-            </tbody>
+        <?php endwhile; ?>
+    <?php else: ?>
+        <tr><td colspan="10">No products found.</td></tr>
+    <?php endif; ?>
+</tbody>
+
         </table>
     </main>
 </div>

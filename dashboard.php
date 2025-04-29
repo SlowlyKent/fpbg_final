@@ -21,7 +21,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 <div class="dashboard-container" id="dashboardContainer">
     <div class="sidebar" id="sidebar">
-        <h2>FPBG STOCK</h2>
+        <h2>FPBG <br> STOCK</h2>
         <ul>
         <?php if ($_SESSION['role'] === 'admin'): ?>
             <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
