@@ -18,6 +18,7 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FPBG Stock Inventory</title>
     <link rel="stylesheet" href="inventory.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="inventory.js"></script>
 </head>
 <body>
@@ -33,7 +34,6 @@ $result = $conn->query($sql);
                 <li><a href="inventory.php">Inventory</a></li>
                 <li><a href="stock_in.php">Stock In</a></li>
                 <li><a href="stock_out.php">Stock Out</a></li>
-                <li><a href="transaction.php">Transaction</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
             <?php elseif ($_SESSION['role'] === 'staff'): ?>

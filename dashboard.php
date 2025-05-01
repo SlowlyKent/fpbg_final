@@ -43,9 +43,8 @@
         <li><a href="inventory.php">Inventory</a></li>
         <li><a href="stock_in.php">Stock In</a></li>
         <li><a href="stock_out.php">Stock Out</a></li>
-        <li><a href="transaction.php">Transaction</a></li>
         <li><a href="create.php">Create User</a></li>
-        <li><a href=".php">View Users</a></li>
+        <li><a href="read.php">View Users</a></li>
             <?php elseif ($_SESSION['role'] === 'staff'): ?>
                 <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
             <?php endif; ?>
