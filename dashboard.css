@@ -3,24 +3,22 @@ html, body {
     width: 100%;
     margin: 0;
     padding: 0;
-
+    font-family: 'Arial', sans-serif; /* Ensure the font is Arial */
 }
-
 
 /* Dashboard Container */
 .dashboard-container {
     display: flex;
     width: 100vw;
     height: 100vh;
-    font-family: Arial, sans-serif;
 }
 
 /* Sidebar */
 .sidebar {
     width: 250px; /* Adjust width as needed */
     height: 100vh;
-    background-color: #bababa;
-    color: white;
+    background-color: #f4f4f4; /* Light gray background */
+    color: #333; /* Dark gray text color */
     padding: 20px;
     box-sizing: border-box;
     display: flex;
@@ -31,6 +29,9 @@ html, body {
 .sidebar h2 {
     text-align: center;
     color: #003366;
+    font-size: 24px; /* Increase font size */
+    font-weight: bold; /* Make the text bold */
+    margin-bottom: 20px;
 }
 
 .sidebar ul {
@@ -41,13 +42,36 @@ html, body {
 .sidebar ul li {
     padding: 15px;
     margin: 10px 0;
-    background: #b0b0b0;
+    background: #e0e0e0; /* Light gray background for list items */
     border-radius: 5px;
     text-align: center;
+    font-size: 18px; /* Increase font size */
+    font-weight: bold; /* Make the text bold */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333; /* Dark gray text color */
+    display: block; /* Make the anchor tag take full width */
 }
 
 .sidebar ul li:hover {
-    background: #8c8c8c;
+    background: #c0c0c0; /* Slightly darker gray on hover */
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: #003366; /* Blue color for logout link */
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    display: block;
+    text-align: center;
+}
+
+.logout-btn:hover {
+    text-decoration: underline; /* Underline on hover */
 }
 
 /* Search Bar */
@@ -99,17 +123,10 @@ canvas {
 }
 
 a:-webkit-any-link {
-    color: -webkit-link;
+    color: #333; /* Dark gray text color */
     cursor: pointer;
     text-decoration: underline;
-    text-decoration-color:black;
-}
-
-element.style {
-    display: block;
-    box-sizing: border-box;
-    height: 300px;
-    width: 300px;
+    text-decoration-color: #333;
 }
 
 .main-content {
@@ -146,7 +163,7 @@ element.style {
     padding: 10px;
     border-radius: 50%;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    
+
 }
 
 .notification-badge {

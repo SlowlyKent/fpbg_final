@@ -1,29 +1,31 @@
 <?php
 session_start();
-include 'connect.php'; 
+include 'connect.php';
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
     header('Location: permission-denied.php');
     exit();
 }
 
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
     if (isset($_POST['username'], $_POST['password'], $_POST['confirm_password'], $_POST['role'])) {
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
         $confirm_password = trim($_POST['confirm_password']);
-        $role = $_POST['role'];  
+        $role = $_POST['role'];
 
-       
         if ($password !== $confirm_password) {
             echo "<script>alert('Passwords do not match!'); window.location.href='create.php';</script>";
             exit();
         }
 
-     
         $checkStmt = $conn->prepare("SELECT user_id FROM users WHERE username = ?");
+        if ($checkStmt === false) {
+            error_log("Prepare statement error: " . $conn->error);
+            echo "<script>alert('An error occurred. Please try again later.'); window.location.href='create.php';</script>";
+            exit();
+        }
+
         $checkStmt->bind_param("s", $username);
         $checkStmt->execute();
         $checkStmt->store_result();
@@ -34,28 +36,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $checkStmt->close();
 
-        
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-     
-        $stmt = $conn->prepare("INSERT INTO user_final (username, password, role) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $hashed_password, $role);  
-
-        if ($stmt->execute()) {
-            
-            header("Location: index.php");
+        $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+        if ($stmt === false) {
+            error_log("Prepare statement error: " . $conn->error);
+            echo "<script>alert('An error occurred. Please try again later.'); window.location.href='create.php';</script>";
             exit();
-        } else {
-            echo "<script>alert('Registration failed! Please try again.'); window.location.href='create.php';</script>";
         }
 
-        
+        $stmt->bind_param("sss", $username, $hashed_password, $role);
+
+        if ($stmt->execute()) {
+            echo "<script>alert('User registered successfully!'); window.location.href='read.php';</script>";
+            exit();
+        } else {
+            error_log("Registration failed: " . $stmt->error);
+            echo "<script>alert('Registration failed! Please try again later.'); window.location.href='create.php';</script>";
+        }
+
         $stmt->close();
     } else {
         echo "<script>alert('Please fill in all fields.'); window.location.href='create.php';</script>";
     }
 }
-
 
 $conn->close();
 ?>
@@ -69,23 +73,21 @@ $conn->close();
     <link rel="stylesheet" href="create.css">
 </head>
 <body>
-    <h1 class="logo">FPBG<br> STOCK</h1>   
+    <h1 class="logo">FPBG<br> STOCK</h1>
     <div class="login-container">
         <h2>User Registration</h2>
         <form action="create.php" method="POST">
             <input type="text" name="username" placeholder="Enter Username" required>
             <input type="password" name="password" placeholder="Enter Password" required>
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-
-           
             <label for="role">Select Role:</label>
             <select name="role" required>
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
             </select>
-
             <button type="submit">Register</button>
         </form>
+        <a href="dashboard.php" class="back-link">Back to Dashboard</a>
     </div>
 </body>
 </html>

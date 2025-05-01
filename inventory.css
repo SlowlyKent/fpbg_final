@@ -1,86 +1,112 @@
-* {
+html, body {
+    height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    font-family: 'Arial', sans-serif; /* Ensure the font is Arial */
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-}
-
-.container {
+/* Dashboard Container */
+.dashboard-container {
     display: flex;
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
 }
 
+/* Sidebar */
 .sidebar {
-    width: 220px;
-    background: #d3d3d3;
+    width: 250px; /* Adjust width as needed */
+    height: 100vh;
+    background-color: #f4f4f4; /* Light gray background */
+    color: #333; /* Dark gray text color */
     padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .sidebar h2 {
-    color: #4a90e2;
-    margin-bottom: 30px;
-}
-
-.sidebar h2 span {
-    color: #f44336;
-}
-
-.sidebar nav ul {
-    list-style: none;
-}
-
-.sidebar nav ul li {
+    text-align: center;
+    color: #003366;
+    font-size: 24px; /* Increase font size */
+    font-weight: bold; /* Make the text bold */
     margin-bottom: 20px;
 }
 
-.sidebar nav ul li a {
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
+.sidebar ul {
+    list-style: none;
+    padding: 0;
 }
 
-.sidebar nav ul li.active a {
-    background: #ccc;
+.sidebar ul li {
+    padding: 15px;
+    margin: 10px 0;
+    background: #e0e0e0; /* Light gray background for list items */
+    border-radius: 5px;
+    text-align: center;
+    font-size: 18px; /* Increase font size */
+    font-weight: bold; /* Make the text bold */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333; /* Dark gray text color */
+    display: block; /* Make the anchor tag take full width */
+}
+
+.sidebar ul li:hover {
+    background: #c0c0c0; /* Slightly darker gray on hover */
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: #003366; /* Blue color for logout link */
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    display: block;
+    text-align: center;
+}
+
+.logout-btn:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Search Bar */
+.search-bar {
+    background: #003366;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px; /* Add margin to separate from the table */
+}
+
+.search-bar input {
+    width: 40%;
     padding: 8px;
     border-radius: 5px;
-}
-
-.main-content {
-    flex: 1;
-    padding: 20px;
-    background: #fff;
-}
-
-.top-bar {
-    margin-bottom: 20px;
-}
-
-.top-bar input {
-    width: 300px;
-    padding: 10px;
-    font-size: 16px;
     border: 1px solid #ccc;
-    border-radius: 30px;
 }
 
+/* Table */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px; /* Add margin to separate from the search bar */
 }
 
 thead {
-    background: #003366;
-    color: #fff;
+    background: #f4f4f4; /* Light gray background for header */
+    color: #000; /* Black text color */
 }
 
 th, td {
     padding: 12px 15px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    color: #000; /* Black text color */
 }
 
 tbody tr:hover {
@@ -105,4 +131,161 @@ tbody tr:hover {
 
 .status.outofstock {
     background: #f44336;
+}
+
+/* Cards */
+.stat-cards {
+    display: flex;
+    gap: 20px;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background-color: #69a2ff;
+    color: black;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 200px;
+}
+
+/* Charts */
+.chart-container {
+    flex: 1;
+    min-width: 400px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+a:-webkit-any-link {
+    color: #333; /* Dark gray text color */
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: #333;
+}
+
+.main-content {
+    flex-grow: 1;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #F8F9FA;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-cards, .charts {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+/* Notification Icon */
+.notification-container {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    cursor: pointer;
+}
+.notification-icon i {
+    color: #003366; /* Dark Blue Bell Icon */
+    font-size: 24px;
+}
+.notification-icon i {
+    position: relative;
+    background: white; /* Background color */
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: red;
+    color: white;
+    font-size: 12px;
+    padding: 3px 7px;
+    border-radius: 50%;
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 200px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    text-align: left;
+}
+
+.notification-dropdown h4 {
+    margin: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.notification-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notification-dropdown li {
+    padding: 8px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 14px;
+}
+
+.notification-dropdown li:last-child {
+    border-bottom: none;
+}
+
+.notification-dropdown li:hover {
+    background: #f7f7f7;
+    cursor: pointer;
+}
+
+/* Additional Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.top-bar {
+    margin-bottom: 20px;
+}
+
+.top-bar input {
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
 }
