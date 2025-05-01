@@ -129,14 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="number" step="0.01" id="selling_price" name="selling_price" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="stock_status">Stock Status:</label>
-                    <select id="stock_status" name="stock_status" required>
-                        <option value="normal">Normal</option>
-                        <option value="overstock">Overstock</option>
-                        <option value="outofstock">Out of Stock</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
                     <label for="expiration_date">Expiration Date:</label>
