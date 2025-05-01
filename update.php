@@ -1,10 +1,20 @@
 <?php
 include 'connect.php'; 
+session_start();
+include 'connect.php';
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin')) {
-    header('Location: permission-denied.php');
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
     exit();
 }
+
+$isAdmin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+
+if (!$isAdmin) {
+    echo "<script>alert('Permission Denied'); window.location.href='read.php';</script>";
+    exit();
+}
+
 
 if (isset($_GET['user_id'])) {
     $user_id = $_GET['user_id'];

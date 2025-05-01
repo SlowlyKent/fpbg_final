@@ -11,7 +11,6 @@ $sql = "SELECT * FROM inventory";
 $result = $conn->query($sql);
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,26 +18,49 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FPBG Stock Inventory</title>
     <link rel="stylesheet" href="inventory.css">
+    <script defer src="inventory.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <aside class="sidebar">
-        <h2>FPBG <span>STOCK</span></h2>
-        <nav>
-            <ul>
-                <li><a href="#">Dashboard</a></li>
-                <li class="active"><a href="#">Inventory</a></li>
-                <li><a href="#">Stock Out</a></li>
-                <li><a href="#">Stock In</a></li>
-                <li><a href="#">Transaction</a></li>
-            </ul>
-        </nav>
-    </aside>
+    <div class="sidebar" id="sidebar">
+        <h2>FPBG STOCK</h2>
+        <ul>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
+                <li><a href="cashiering-admin.php">Cashiering</a></li>
+                <li><a href="dashboard.php">Dashboard</a></li>
+                <li><a href="inventory.php">Inventory</a></li>
+                <li><a href="stock_in.php">Stock In</a></li>
+                <li><a href="stock_out.php">Stock Out</a></li>
+                <li><a href="transaction.php">Transaction</a></li>
+                <li><a href="create.php">Create User</a></li>
+                <li><a href="read.php">View Users</a></li>
+            <?php elseif ($_SESSION['role'] === 'staff'): ?>
+                <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
+            <?php endif; ?>
+        </ul>
+        <a href="logout.php" class="logout-btn">Logout</a>
+    </div>
 
-    <main class="main-content">
-        <div class="top-bar">
-            <input type="text" placeholder="Search...">
+    <div class="main-content" id="mainContent">
+        <div class="notification-container" id="notificationContainer">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notification-badge" id="notifBadge">3</span>
+            </div>
+            <div class="notification-dropdown" id="notifDropdown">
+                <h4>Notifications</h4>
+                <ul id="notifList">
+                    <li>New stock added</li>
+                    <li>Stock running low</li>
+                    <li>Transaction completed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="search-bar" id="searchBar">
+            <input type="text" placeholder="Search">
         </div>
 
         <table>
@@ -57,19 +79,33 @@ $result = $conn->query($sql);
                 </tr>
             </thead>
             <tbody>
-            </tr>
                 <tr>
-                    <td>01</td><td>Nuggets</td><td>Bingo</td><td>10</td><td>grams</td><td>Chicken</td><td>60</td><td>65</td>
-                    <td><span class="status outofstock">Out of Stock</span></td><td>08/10/25</td>
+                    <td>01</td>
+                    <td>Nuggets</td>
+                    <td>Bingo</td>
+                    <td>10</td>
+                    <td>grams</td>
+                    <td>Chicken</td>
+                    <td>60</td>
+                    <td>65</td>
+                    <td><span class="status outofstock">Out of Stock</span></td>
+                    <td>08/10/25</td>
                 </tr>
                 <tr>
-                    <td>02</td><td>Tocino</td><td>Virginia</td><td>23</td><td>grams</td><td>Pork</td><td>110</td><td>120</td>
-                    <td><span class="status normal">Normal</span></td><td>08/10/25</td>
+                    <td>02</td>
+                    <td>Tocino</td>
+                    <td>Virginia</td>
+                    <td>23</td>
+                    <td>grams</td>
+                    <td>Pork</td>
+                    <td>110</td>
+                    <td>120</td>
+                    <td><span class="status normal">Normal</span></td>
+                    <td>08/10/25</td>
                 </tr>
-                <tr>
             </tbody>
         </table>
-    </main>
+    </div>
 </div>
 
 </body>

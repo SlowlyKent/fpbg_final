@@ -1,66 +1,193 @@
-/* Ensure that the table wrapper is scrollable */
-.table-wrapper {
-    max-height: 400px; /* Set the height you want for the scrollable area */
-    overflow-y: auto;  /* Enable vertical scrolling */
-    overflow-x: auto;  /* Enable horizontal scrolling if needed */
-    margin-top: 20px;
+/* Reset and base styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f6fc;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
 }
 
-/* Table Styling */
-table {
+.container {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 18px;
-    text-align: left;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    max-width: 400px; /* Smaller table width */
+    margin: 0 auto;
+    padding: 15px; /* Reduced padding for smaller content */
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
 }
 
-/* Table Header */
-th {
-    background-color: #007BFF;
-    color: white;
-    padding: 12px;
-    text-transform: uppercase;
+.logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 20px; /* Smaller logo */
+    font-weight: bold;
+    color: #4784ff;
+    line-height: 1.2;
 }
 
-/* Table Rows */
-td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+.page-title {
+    text-align: center;
+    margin-bottom: 15px; /* Reduced margin */
+    font-size: 20px; /* Smaller title */
+    color: #333;
 }
 
-/* Action Links */
-td a {
+.admin-controls {
+    text-align: center;
+    margin-bottom: 15px; /* Reduced margin */
+}
+
+.admin-controls form,
+.admin-controls a {
+    display: inline-block;
+    margin: 5px;
+}
+
+.btn-primary,
+.btn-danger,
+.btn-edit,
+.btn-delete,
+.btn-back {
+    padding: 6px 12px; /* Smaller button padding */
     text-decoration: none;
-    padding: 8px 12px;
     border-radius: 5px;
     color: white;
     font-weight: bold;
-    display: inline-block;
-    margin-right: 5px;
+    transition: background 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
 }
 
-/* Edit Button */
-td a[href*='update'] {
-    background-color: #28a745;
+.btn-primary {
+    background-color: #007BFF;
 }
 
-/* Delete Button */
-td a[href*='delete'] {
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-danger {
     background-color: #dc3545;
 }
 
-td a:hover {
-    opacity: 0.8;
+.btn-danger:hover {
+    background-color: #a71d2a;
 }
 
-/* Logo Styling */
-.logo {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    color: rgb(71, 132, 255);
+.btn-edit {
+    background-color: #28a745;
+}
+
+.btn-edit:hover {
+    background-color: #218838;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #a71d2a;
+}
+
+.btn-back {
+    background-color: #007BFF;
+}
+
+.btn-back:hover {
+    background-color: #0056b3;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin: 0 auto; /* Center the table */
+    max-width: 400px; /* Ensure the table is smaller */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Smaller font size */
+    min-width: 100%;
+    margin: 0 auto; /* Center the table */
+}
+
+th, td {
+    padding: 8px; /* Smaller padding */
+    text-align: left;
+}
+
+th {
+    background-color: #007BFF;
+    color: white;
+    text-transform: uppercase;
+}
+
+td {
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+}
+
+tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+td a {
+    text-decoration: none;
+    padding: 5px 10px; /* Smaller padding */
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    margin-right: 5px;
+    display: inline-block;
+}
+
+td a.btn-edit {
+    background-color: #28a745;
+}
+
+td a.btn-edit:hover {
+    background-color: #218838;
+}
+
+td a.btn-delete {
+    background-color: #dc3545;
+}
+
+td a.btn-delete:hover {
+    background-color: #a71d2a;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.back-link a {
+    text-decoration: none;
+    color: #007BFF;
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
+    .container {
+        max-width: 90%; /* Smaller container width on mobile */
+    }
+
+    table {
+        font-size: 11px; /* Smaller font size on mobile */
+    }
+
+    td a {
+        padding: 4px 8px; /* Smaller padding on mobile */
+    }
 }
