@@ -21,14 +21,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stock_status = htmlspecialchars(trim($_POST['stock_status']));
     $expiration_date = htmlspecialchars(trim($_POST['expiration_date']));
 
-    // Insert data into the database
-    $sql = "INSERT INTO inventory (product_id, product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, stock_status, expiration_date)
-            VALUES ('$product_id', '$product_name', '$brand', '$stock_quantity', '$unit_of_measure', '$category', '$cost_price', '$selling_price', '$stock_status', '$expiration_date')";
+    // Check if the product ID already exists
+    $check_sql = "SELECT * FROM inventory WHERE product_id = '$product_id'";
+    $check_result = $conn->query($check_sql);
 
-    if ($conn->query($sql) === TRUE) {
-        echo "<script>alert('New stock added successfully!');</script>";
+    if ($check_result->num_rows > 0) {
+        // Product ID exists, update the stock quantity
+        $row = $check_result->fetch_assoc();
+        $new_stock_quantity = $row['stock_quantity'] + $stock_quantity;
+        $update_sql = "UPDATE products SET stock_quantity = '$new_stock_quantity' WHERE product_id = '$product_id'";
+
+        if ($conn->query($update_sql) === TRUE) {
+            header('Location: inventory.php');
+            exit();
+        } else {
+            echo "<script>alert('Error updating record: " . $conn->error . "');</script>";
+        }
     } else {
-        echo "<script>alert('Error: " . $conn->error . "');</script>";
+        // Product ID does not exist, insert new record
+        $insert_sql = "INSERT INTO products (product_id, product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, stock_status, expiration_date)
+                       VALUES ('$product_id', '$product_name', '$brand', '$stock_quantity', '$unit_of_measure', '$category', '$cost_price', '$selling_price', '$stock_status', '$expiration_date')";
+
+        if ($conn->query($insert_sql) === TRUE) {
+            header('Location: inventory.php');
+            exit();
+        } else {
+            echo "<script>alert('Error: " . $conn->error . "');</script>";
+        }
     }
 }
 ?>
@@ -56,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li><a href="inventory.php">Inventory</a></li>
                 <li><a href="stock_in.php">Stock In</a></li>
                 <li><a href="stock_out.php">Stock Out</a></li>
-                <li><a href="transaction.php">Transaction</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
             <?php elseif ($_SESSION['role'] === 'staff'): ?>
@@ -129,6 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="number" step="0.01" id="selling_price" name="selling_price" required>
                 </div>
 
+                <div class="form-group">
+                    <label for="stock_status">Stock Status:</label>
+                    <select id="stock_status" name="stock_status" required>
+                        <option value="normal">Normal</option>
+                        <option value="overstock">Overstock</option>
+                        <option value="outofstock">Out of Stock</option>
+                    </select>
+                </div>
 
                 <div class="form-group">
                     <label for="expiration_date">Expiration Date:</label>

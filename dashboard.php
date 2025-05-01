@@ -102,9 +102,6 @@
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        loadPage('dashboard-content.php');
-    });
 
     // Load Pages (fullscreen if cashiering)
     function loadPage(page, event = null, isCashiering = false) {

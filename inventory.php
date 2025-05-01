@@ -1,14 +1,99 @@
 <?php
+// inventory.php - View and manage inventory
 session_start();
-include 'connect.php';
+include("connect.php");
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: permission-denied.php');
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id']) || (!in_array($_SESSION['role'], ['admin', 'staff']))) {
+    header("Location: login.php");
     exit();
 }
 
-$sql = "SELECT * FROM inventory";
-$result = $conn->query($sql);
+// Process POST requests for API calls
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the raw POST data
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    
+    if (!$data || !isset($data['cart']) || empty($data['cart'])) {
+        header('Content-Type: application/json');
+        echo json_encode(["error" => "Invalid data received"]);
+        exit();
+    }
+    
+    $cart = $data['cart'];
+    $transactionId = isset($data['transaction_id']) ? $data['transaction_id'] : null;
+    
+    // Begin transaction
+    $conn->begin_transaction();
+    
+    try {
+        foreach ($cart as $item) {
+            $product_id = $item['id'];
+            $quantity = $item['quantity'];
+            
+            // Update the inventory - reduce stock quantity
+            $stmt = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?");
+            $stmt->bind_param("is", $quantity, $product_id);
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                throw new Exception("Failed to update inventory for product ID: $product_id");
+            }
+            
+            // Check if we need to update stock status based on remaining quantity
+            $stmt = $conn->prepare("SELECT stock_quantity FROM products WHERE product_id = ?");
+            $stmt->bind_param("s", $product_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($row = $result->fetch_assoc()) {
+                $newQuantity = $row['stock_quantity'];
+                $newStatus = "in stock";
+                
+                // Set status based on remaining quantity
+                if ($newQuantity <= 0) {
+                    $newStatus = "out of stock";
+                } elseif ($newQuantity < 10) { // Assuming 10 is the threshold for "low stock"
+                    $newStatus = "low stock";
+                }
+                
+                // Update the status
+                $updateStmt = $conn->prepare("UPDATE products SET stock_status = ? WHERE product_id = ?");
+                $updateStmt->bind_param("ss", $newStatus, $product_id);
+                $updateStmt->execute();
+            }
+            
+            // Insert transaction details if transaction ID is provided
+            if ($transactionId) {
+                $stmt = $conn->prepare("INSERT INTO transaction_details (transaction_id, product_id, quantity, price) 
+                                        VALUES (?, ?, ?, ?)");
+                $price = $item['price'];
+                $stmt->bind_param("iidd", $transactionId, $product_id, $quantity, $price);
+                $stmt->execute();
+            }
+        }
+        
+        // If everything is successful, commit the transaction
+        $conn->commit();
+        
+        header('Content-Type: application/json');
+        echo json_encode(["success" => "Inventory updated successfully"]);
+        exit();
+    } catch (Exception $e) {
+        // An error occurred, rollback the transaction
+        $conn->rollback();
+        
+        header('Content-Type: application/json');
+        echo json_encode(["error" => $e->getMessage()]);
+        exit();
+    }
+}
+
+// For GET requests - display the inventory page
+// Query to get inventory data
+$query = "SELECT * FROM products";
+$result = $conn->query($query);
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +112,7 @@ $result = $conn->query($sql);
     <div class="sidebar" id="sidebar">
         <h2>FPBG STOCK</h2>
         <ul>
-            <?php if ($_SESSION['role'] === 'admin'): ?>
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                 <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
                 <li><a href="cashiering-admin.php">Cashiering</a></li>
                 <li><a href="dashboard.php">Dashboard</a></li>
@@ -36,13 +121,13 @@ $result = $conn->query($sql);
                 <li><a href="stock_out.php">Stock Out</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
-            <?php elseif ($_SESSION['role'] === 'staff'): ?>
-                <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
+            <?php elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'staff'): ?>
+                <li><a href="#" onclick="loadPage('Cashiering.php', event, true)">Cashiering</a></li>
             <?php endif; ?>
         </ul>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
-
+                
     <div class="main-content" id="mainContent">
         <div class="notification-container" id="notificationContainer">
             <div class="notification-icon" onclick="toggleNotifications()">
@@ -62,7 +147,9 @@ $result = $conn->query($sql);
         <div class="search-bar" id="searchBar">
             <input type="text" placeholder="Search">
         </div>
-
+        <div>
+            <span class="stock-status">Stock Status</span>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -79,30 +166,26 @@ $result = $conn->query($sql);
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>01</td>
-                    <td>Nuggets</td>
-                    <td>Bingo</td>
-                    <td>10</td>
-                    <td>grams</td>
-                    <td>Chicken</td>
-                    <td>60</td>
-                    <td>65</td>
-                    <td><span class="status outofstock">Out of Stock</span></td>
-                    <td>08/10/25</td>
-                </tr>
-                <tr>
-                    <td>02</td>
-                    <td>Tocino</td>
-                    <td>Virginia</td>
-                    <td>23</td>
-                    <td>grams</td>
-                    <td>Pork</td>
-                    <td>110</td>
-                    <td>120</td>
-                    <td><span class="status normal">Normal</span></td>
-                    <td>08/10/25</td>
-                </tr>
+                <?php
+                if ($result && $result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($row['product_id']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['product_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['brand']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['stock_quantity']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['unit_of_measure']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['category']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['cost_price']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['selling_price']) . "</td>";
+                        echo "<td><span class='status " . strtolower(htmlspecialchars($row['stock_status'])) . "'>" . htmlspecialchars($row['stock_status']) . "</span></td>";
+                        echo "<td>" . htmlspecialchars($row['expiration_date']) . "</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='10'>No inventory items found.</td></tr>";
+                }
+                ?>
             </tbody>
         </table>
     </div>

@@ -114,23 +114,23 @@ tbody tr:hover {
 }
 
 .status {
-    padding: 5px 10px;
+    padding: 10px 15px; /* Added padding */
     border-radius: 15px;
     color: #fff;
     font-size: 14px;
     display: inline-block;
 }
 
-.status.normal {
-    background: #4caf50;
+.status.instock {
+    background: #4caf50; /* Green for in stock */
 }
 
 .status.overstock {
-    background: #2196f3;
+    background: #2196f3; /* Blue for overstock */
 }
 
 .status.outofstock {
-    background: #f44336;
+    background: #f44336; /* Red for out of stock */
 }
 
 /* Cards */
@@ -288,4 +288,10 @@ body {
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 30px;
+}
+
+.stock-status {
+    color: #003366; /* Dark Blue color */
+    font-weight: bold;
+    font-size: 18px; /* Increase font size */
 }

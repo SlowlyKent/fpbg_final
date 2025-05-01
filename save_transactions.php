@@ -1,77 +1,28 @@
 <?php
-session_start();
-include("connect.php");
+// save_transactions.php
+
 header('Content-Type: application/json');
 
+// Get the raw POST data
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
-// Log the request to check the data
-error_log("Transaction request received: " . print_r($_POST, true));
-
-// Check if user is authorized
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
-
-// Read the raw POST data
-$data = json_decode(file_get_contents('php://input'), true);
-
-// Validate the data
-if (!$data || !isset($data['cart']) || !is_array($data['cart']) || empty($data['cart'])) {
+// Check if the data is valid
+if (json_last_error() !== JSON_ERROR_NONE) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid transaction data']);
+    echo json_encode(['error' => 'Invalid JSON']);
     exit;
 }
 
-$totalAmount = $data['totalAmount'] ?? 0;
-$amountPaid = $data['amountPaid'] ?? 0;
-$changeAmount = $data['change'] ?? 0;
-$discount = $data['discount'] ?? 0;
+// Process the transaction (this is just an example, replace with your actual logic)
+$transaction_id = uniqid(); // Generate a unique transaction ID
 
-// Validate numeric values
-if (!is_numeric($totalAmount) || !is_numeric($amountPaid) || !is_numeric($changeAmount) || !is_numeric($discount)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid payment amounts']);
-    exit;
-}
+// Simulate a successful transaction
+$response = [
+    'transaction_id' => $transaction_id,
+    'message' => 'Transaction processed successfully'
+];
 
-try {
-    // Begin transaction
-    $conn->begin_transaction();
-
-    // Insert into transactions table
-    $stmt = $conn->prepare("
-        INSERT INTO transactions (user_id, total_amount, discount, amount_paid, change_amount)
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("idddd", $_SESSION['user_id'], $totalAmount, $discount, $amountPaid, $changeAmount);
-    $stmt->execute();
-
-    // Get the transaction ID
-    $transaction_id = $conn->insert_id;
-
-    // Optionally, insert transaction items into a new table (transaction_items), if necessary
-    // Assuming you have a table `transaction_items`, you can loop through the cart
-    foreach ($data['cart'] as $item) {
-        $stmt_item = $conn->prepare("INSERT INTO transaction_items (transaction_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)");
-        $stmt_item->bind_param("iiid", $transaction_id, $item['product_id'], $item['quantity'], $item['price']);
-        $stmt_item->execute();
-    }
-
-    // Commit the transaction
-    $conn->commit();
-
-    // Return success response with transaction ID
-    echo json_encode(['success' => true, 'transaction_id' => $transaction_id]);
-
-} catch (Exception $e) {
-    // Rollback if any error occurs
-    $conn->rollback();
-    error_log("Transaction failed: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
-} finally {
-    $conn->close();
-}
+// Return the response as JSON
+echo json_encode($response);
 ?>
