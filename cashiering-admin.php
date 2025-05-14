@@ -38,6 +38,7 @@ include ("connect.php");
         <thead>
             <tr>
                 <th>Item</th>
+                <th>Brand</th>
                 <th>Product Name</th>
                 <th>Unit Price</th>
                 <th>Quantity</th>

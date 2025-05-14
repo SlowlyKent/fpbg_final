@@ -150,6 +150,14 @@ $result = $conn->query($query);
         <div>
             <span class="stock-status">Stock Status</span>
         </div>
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <div class="success-message" style="background-color: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border: 1px solid #c3e6cb; border-radius: 4px;">
+                <?php 
+                    echo $_SESSION['success_message']; 
+                    unset($_SESSION['success_message']);
+                ?>
+            </div>
+        <?php endif; ?>
         <table>
             <thead>
                 <tr>
@@ -161,31 +169,28 @@ $result = $conn->query($query);
                     <th>Category</th>
                     <th>Cost Price</th>
                     <th>Selling Price</th>
-                    <th>Stock Status</th>
                     <th>Expiration Date</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                if ($result && $result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['product_id']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['product_name']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['brand']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['stock_quantity']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['unit_of_measure']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['category']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['cost_price']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['selling_price']) . "</td>";
-                        echo "<td><span class='status " . strtolower(htmlspecialchars($row['stock_status'])) . "'>" . htmlspecialchars($row['stock_status']) . "</span></td>";
-                        echo "<td>" . htmlspecialchars($row['expiration_date']) . "</td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='10'>No inventory items found.</td></tr>";
-                }
-                ?>
+                <?php if ($result && $result->num_rows > 0): ?>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['product_id']) ?></td>
+                            <td><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td><?= htmlspecialchars($row['brand']) ?></td>
+                            <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
+                            <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
+                            <td><?= htmlspecialchars($row['category']) ?></td>
+                            <td><?= htmlspecialchars($row['cost_price']) ?></td>
+                            <td><?= htmlspecialchars($row['selling_price']) ?></td>
+                            <td><span class="status <?= strtolower(htmlspecialchars($row['stock_status'])) ?>"><?= htmlspecialchars($row['stock_status']) ?></span></td>
+                            <td><?= htmlspecialchars($row['expiration_date']) ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr><td colspan="10">No inventory items found.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

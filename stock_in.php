@@ -1,6 +1,6 @@
 <?php
 session_start();
-include ('connect.php');
+include('connect.php');
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: permission-denied.php');
@@ -22,31 +22,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expiration_date = htmlspecialchars(trim($_POST['expiration_date']));
 
     // Check if the product ID already exists
-    $check_sql = "SELECT * FROM inventory WHERE product_id = '$product_id'";
-    $check_result = $conn->query($check_sql);
+    $check_sql = "SELECT * FROM products WHERE product_id = ?";
+    $check_stmt = $conn->prepare($check_sql);
 
-    if ($check_result->num_rows > 0) {
+    if ($check_stmt === false) {
+        die('Error in preparing check statement: ' . $conn->error);
+    }
+
+    $check_stmt->bind_param("s", $product_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+
+    if ($check_result && $check_result->num_rows > 0) {
         // Product ID exists, update the stock quantity
         $row = $check_result->fetch_assoc();
         $new_stock_quantity = $row['stock_quantity'] + $stock_quantity;
-        $update_sql = "UPDATE products SET stock_quantity = '$new_stock_quantity' WHERE product_id = '$product_id'";
+        $update_sql = "UPDATE products SET stock_quantity = ? WHERE product_id = ?";
+        $update_stmt = $conn->prepare($update_sql);
 
-        if ($conn->query($update_sql) === TRUE) {
+        if ($update_stmt === false) {
+            die('Error in preparing update statement: ' . $conn->error);
+        }
+
+        $update_stmt->bind_param("is", $new_stock_quantity, $product_id);
+
+        if ($update_stmt->execute()) {
+            $_SESSION['success_message'] = 'Product successfully updated';
             header('Location: inventory.php');
             exit();
         } else {
-            echo "<script>alert('Error updating record: " . $conn->error . "');</script>";
+            $_SESSION['error_message'] = 'Error updating record: ' . $conn->error;
+            header('Location: stock_in.php');
+            exit();
         }
     } else {
         // Product ID does not exist, insert new record
         $insert_sql = "INSERT INTO products (product_id, product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, stock_status, expiration_date)
-                       VALUES ('$product_id', '$product_name', '$brand', '$stock_quantity', '$unit_of_measure', '$category', '$cost_price', '$selling_price', '$stock_status', '$expiration_date')";
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_stmt = $conn->prepare($insert_sql);
 
-        if ($conn->query($insert_sql) === TRUE) {
+        if ($insert_stmt === false) {
+            die('Error in preparing insert statement: ' . $conn->error);
+        }
+
+        $insert_stmt->bind_param("sssissddss", $product_id, $product_name, $brand, $stock_quantity, $unit_of_measure, $category, $cost_price, $selling_price, $stock_status, $expiration_date);
+
+        if ($insert_stmt->execute()) {
+            $_SESSION['success_message'] = 'Product successfully added';
             header('Location: inventory.php');
             exit();
         } else {
-            echo "<script>alert('Error: " . $conn->error . "');</script>";
+            $_SESSION['error_message'] = 'Error: ' . $conn->error;
+            header('Location: stock_in.php');
+            exit();
         }
     }
 }
