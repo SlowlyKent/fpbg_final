@@ -168,11 +168,13 @@ $result = $conn->query($query);
                 <tr>
                     <th>Product ID</th>
                     <th>Product Name</th>
+                    <th>Brand</th>
                     <th>Stock Quantity</th>
                     <th>Unit of Measure</th>
                     <th>Cost Price</th>
                     <th>Selling Price</th>
                     <th>Stock Status</th>
+                    <th>Category</th>
                     <th>Expiration Date</th>
                     <th>Actions</th>
                 </tr>
@@ -193,16 +195,17 @@ $result = $conn->query($query);
             <tr>
                 <td><?= htmlspecialchars($row['product_id']) ?></td>
                 <td><?= htmlspecialchars($row['product_name']) ?></td>
+                <td><?= htmlspecialchars($row['brand']) ?></td>
                 <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
                 <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
                 <td><?= htmlspecialchars($row['cost_price']) ?></td>
                 <td><?= htmlspecialchars($row['selling_price']) ?></td>
     <td><span class="status <?= strtolower(str_replace([' ', '-'], '', $displayStatus)) ?>"><?= htmlspecialchars($displayStatus) ?></span></td>
+                <td><?= htmlspecialchars($row['category']) ?></td>
                 <td><?= htmlspecialchars($row['expiration_date']) ?></td>
-                <td>
                     <button onclick="editProduct('<?= $row['product_id'] ?>')">Edit</button>
                     <button onclick="deleteProduct('<?= $row['product_id'] ?>')">Delete</button>
-                </td>
+                </>
             </tr>
         <?php endwhile; ?>
                 <?php else: ?>

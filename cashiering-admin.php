@@ -29,9 +29,12 @@ include ('connect.php');
     <input type="text" id="product_id" placeholder="Enter the Product ID">
 
     <label for="quantity">Quantity:</label>
-    <input type="number" id="quantity" placeholder="Enter quantity" min="1" value="1">
+    <input type="number" id="quantity" placeholder="Enter quantity" min="1" step="1" value="1">
 
-    <button onclick="addProduct()">Add</button>
+    <label for="kilogram">Kilogram (kg):</label>
+    <input type="number" id="kilogram" placeholder="Enter kilogram fraction" min="0.01" step="0.01" value="1">
+
+    <button type="button" onclick="addProduct()">Add</button>
 
     <h3>Order List</h3>
     <table class="order-list">
@@ -50,15 +53,17 @@ include ('connect.php');
     </table>
 
     <div class="payment">
-        <label>Discount (%): <input type="number" id="discount" value="0" onchange="updateTotal()"></label>
-        <label>Amount Paid: <input type="number" id="paidAmount" value="0" onchange="updateChange()"></label>
-        <h3>Total Payable: $<span id="payableAmount">0.00</span></h3>
-        <h3>Change: $<span id="change">0.00</span></h3>
+    <!-- Removed Kilogram (kg) input as it was misused for discount -->
+        <!-- Removed Kilogram (kg) input as it was misused for discount -->
+    <label>Amount Paid: <input type="number" id="paidAmount" value="0" onchange="updateChange()"></label>
+    <label>Discount (%): <input type="number" id="discount" value="0" onchange="updateTotal()"></label>
+    <h3>Total Payable: $<span id="payableAmount">0.00</span></h3>
+    <h3>Change: $<span id="change">0.00</span></h3>
     </div>
 
     <div class="buttons">
-        <button onclick="processPayment()">Pay</button>
-        <button onclick="resetSystem()">Reset</button>
+    <button type="button" onclick="processPayment()">Pay</button>
+    <button type="button" onclick="resetSystem()">Reset</button>
     </div>
 </div>
 
@@ -92,10 +97,15 @@ include ('connect.php');
         }
 
         let quantity = parseInt(document.getElementById("quantity")?.value) || 1;
+        let kilogram = parseFloat(document.getElementById("kilogram")?.value) || 1;
 
         // Validate the quantity
-        if (quantity <= 0) {
+        if (quantity < 1) {
             alert("Quantity must be at least 1");
+            return;
+        }
+        if (kilogram <= 0) {
+            alert("Kilogram must be at least 0.01");
             return;
         }
 
@@ -124,8 +134,11 @@ include ('connect.php');
                 return;
             }
 
+            // Calculate effective quantity for stock check
+            const effectiveQuantity = quantity * kilogram;
+
             // Check if we're ordering more than available
-            if (quantity > product.available_quantity) {
+            if (effectiveQuantity > product.available_quantity) {
                 alert(`Only ${product.available_quantity} units available for this product!`);
                 return;
             }
@@ -133,18 +146,20 @@ include ('connect.php');
             let productIndex = cart.findIndex(item => item.product_id === product_id);
 
             if (productIndex !== -1) {
-                // Check if new total quantity exceeds available stock
-                const newTotalQuantity = cart[productIndex].quantity + quantity;
-                if (newTotalQuantity > product.available_quantity) {
+                // Check if new total effective quantity exceeds available stock
+                const newTotalEffectiveQuantity = cart[productIndex].quantity * cart[productIndex].kilogram + effectiveQuantity;
+                if (newTotalEffectiveQuantity > product.available_quantity) {
                     alert(`Cannot add more. Only ${product.available_quantity} units available for this product!`);
                     return;
                 }
 
                 cart[productIndex].quantity += quantity;
+                cart[productIndex].kilogram += kilogram;
             } else {
                 cart.push({
                     ...product,
                     quantity,
+                    kilogram,
                     product_id: product_id,
                     brand: product.brand || 'No Brand'
                 });
@@ -159,6 +174,7 @@ include ('connect.php');
 
         document.getElementById("product_id").value = "";
         document.getElementById("quantity").value = "1";
+        document.getElementById("kilogram").value = "1";
     }
 
     // Update the order table display
@@ -168,28 +184,28 @@ include ('connect.php');
         let total = 0;
 
         cart.forEach((item, index) => {
-            const price = typeof item.price === 'number' ? item.price : parseFloat(item.price);
+        const price = typeof item.price === 'number' ? item.price : parseFloat(item.price);
 
-            if (isNaN(price)) {
-                console.error("Invalid price for item:", item);
-                return;
-            }
+        if (isNaN(price)) {
+            console.error("Invalid price for item:", item);
+            return;
+        }
 
-            let row = `<tr>
-                <td>${index + 1}</td>
-                <td>${item.brand || 'N/A'}</td>
-                <td>${item.name}</td>
-                <td>₱${price.toFixed(2)}</td>
-                <td>${item.quantity}</td>
-                <td>₱${(price * item.quantity).toFixed(2)}</td>
-                <td><button onclick="removeItem(${index})">Remove</button></td>
-            </tr>`;
-            total += price * item.quantity;
-            table.innerHTML += row;
-        });
+        let row = `<tr>
+            <td>${index + 1}</td>
+            <td>${item.brand || 'N/A'}</td>
+            <td>${item.name}</td>
+            <td>₱${price.toFixed(2)}</td>
+            <td>${item.quantity} x ${item.kilogram.toFixed(2)}</td>
+            <td>₱${(price * item.quantity * item.kilogram).toFixed(2)}</td>
+            <td><button onclick="removeItem(${index})">Remove</button></td>
+        </tr>`;
+        total += price * item.quantity * item.kilogram;
+        table.innerHTML += row;
+    });
 
-        document.getElementById("totalAmount").innerText = total.toFixed(2);
-        updateTotal();
+    document.getElementById("totalAmount").innerText = total.toFixed(2);
+    updateTotal();
     }
 
     // Remove item from cart
@@ -236,16 +252,37 @@ async function processPayment() {
         return;
     }
 
-    let totalAmount = parseFloat(document.getElementById("payableAmount").innerText);
-    let amountPaid = parseFloat(document.getElementById("paidAmount").value);
-    let discount = parseFloat(document.getElementById("discount").value) || 0;
+    let totalAmountElement = document.getElementById("payableAmount");
+    let amountPaidElement = document.getElementById("paidAmount");
+    let discountElement = document.getElementById("discount");
+
+    console.log("Total Amount Element:", totalAmountElement);
+    console.log("Amount Paid Element:", amountPaidElement);
+    console.log("Discount Element:", discountElement);
+
+    if (!totalAmountElement || !amountPaidElement || !discountElement) {
+        console.error("Error: Required elements missing from DOM.");
+        return;
+    }
+
+    let totalAmount = parseFloat(totalAmountElement.innerText);
+    let amountPaid = parseFloat(amountPaidElement.value);
+    let discount = parseFloat(discountElement.value) || 0;
 
     if (isNaN(amountPaid) || amountPaid < totalAmount) {
         alert("Insufficient payment. Please ensure the amount paid is correct.");
         return;
     }
 
-    let changeAmount = parseFloat(document.getElementById("change").innerText);
+    let changeAmountElement = document.getElementById("change");
+    console.log("Change Amount Element:", changeAmountElement);
+
+    if (!changeAmountElement) {
+        console.error("Error: Change element missing from DOM.");
+        return;
+    }
+
+    let changeAmount = parseFloat(changeAmountElement.innerText);
 
     try {
         const data = {
@@ -293,6 +330,7 @@ async function processPayment() {
 }
 
 
+
     // Reset UI and cart
     function resetSystem() {
         cart = [];
@@ -306,6 +344,7 @@ async function processPayment() {
         // Reset input fields
         document.getElementById("product_id").value = "";
         document.getElementById("quantity").value = "1";
+        document.getElementById("kilogram").value = "1";
         document.getElementById("paidAmount").value = "0";
         document.getElementById("discount").value = "0";
     }

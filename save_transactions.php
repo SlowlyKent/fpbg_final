@@ -46,7 +46,7 @@ try {
     foreach ($cart as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
-        $stockTransactionStmt->bind_param("sis", $transactionId, $productId, $quantity);
+        $stockTransactionStmt->bind_param("sdd", $transactionId, $productId, $quantity);
         $stockTransactionStmt->execute();
 
         // Decrease stock quantity in inventory
@@ -55,7 +55,7 @@ try {
         if ($updateStockStmt === false) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
-        $updateStockStmt->bind_param("ii", $quantity, $productId);
+        $updateStockStmt->bind_param("dd", $quantity, $productId);
         $updateStockStmt->execute();
     }
 
