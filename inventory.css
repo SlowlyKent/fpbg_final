@@ -133,6 +133,10 @@ tbody tr:hover {
     background: #f44336; /* Red for out of stock */
 }
 
+.status.out-of-stock {
+    background: #f44336; /* Red for out of stock */
+}
+
 /* Cards */
 .stat-cards {
     display: flex;

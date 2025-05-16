@@ -13,13 +13,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = htmlspecialchars(trim($_POST['product_id']));
     $product_name = htmlspecialchars(trim($_POST['product_name']));
     $brand = htmlspecialchars(trim($_POST['brand']));
-    $stock_quantity = htmlspecialchars(trim($_POST['stock_quantity']));
+    $stock_quantity = (int) htmlspecialchars(trim($_POST['stock_quantity']));
     $unit_of_measure = htmlspecialchars(trim($_POST['unit_of_measure']));
     $category = htmlspecialchars(trim($_POST['category']));
-    $cost_price = htmlspecialchars(trim($_POST['cost_price']));
-    $selling_price = htmlspecialchars(trim($_POST['selling_price']));
-    $stock_status = htmlspecialchars(trim($_POST['stock_status']));
+    $cost_price = (float) htmlspecialchars(trim($_POST['cost_price']));
+    $selling_price = (float) htmlspecialchars(trim($_POST['selling_price']));
     $expiration_date = htmlspecialchars(trim($_POST['expiration_date']));
+
+    // Determine stock status based on stock quantity
+    if ($stock_quantity <= 0) {
+        $stock_status = "out of stock";
+    } elseif ($stock_quantity < 10) {
+        $stock_status = "low stock";
+    } else {
+        $stock_status = "in stock";
+    }
 
     // Check if the product ID already exists
     $check_sql = "SELECT * FROM products WHERE product_id = ?";
@@ -34,23 +42,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $check_result = $check_stmt->get_result();
 
     if ($check_result && $check_result->num_rows > 0) {
-        // Product ID exists, update the stock quantity
+        // Product ID exists, update the stock quantity and status
         $row = $check_result->fetch_assoc();
         $new_stock_quantity = $row['stock_quantity'] + $stock_quantity;
-        $update_sql = "UPDATE products SET stock_quantity = ? WHERE product_id = ?";
+
+        // Determine new stock status based on updated quantity
+        if ($new_stock_quantity <= 0) {
+            $new_stock_status = "out of stock";
+        } elseif ($new_stock_quantity < 10) {
+            $new_stock_status = "low stock";
+        } else {
+            $new_stock_status = "in stock";
+        }
+
+        $update_sql = "UPDATE products SET stock_quantity = ?, stock_status = ? WHERE product_id = ?";
         $update_stmt = $conn->prepare($update_sql);
 
         if ($update_stmt === false) {
             die('Error in preparing update statement: ' . $conn->error);
         }
 
-        $update_stmt->bind_param("is", $new_stock_quantity, $product_id);
+        $update_stmt->bind_param("iss", $new_stock_quantity, $new_stock_status, $product_id);
 
         if ($update_stmt->execute()) {
             $_SESSION['success_message'] = 'Product successfully updated';
             header('Location: inventory.php');
             exit();
         } else {
+            error_log('Error updating stock_status in stock_in.php: ' . $update_stmt->error);
             $_SESSION['error_message'] = 'Error updating record: ' . $conn->error;
             header('Location: stock_in.php');
             exit();
@@ -173,15 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label for="selling_price">Selling Price:</label>
                     <input type="number" step="0.01" id="selling_price" name="selling_price" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="stock_status">Stock Status:</label>
-                    <select id="stock_status" name="stock_status" required>
-                        <option value="normal">Normal</option>
-                        <option value="overstock">Overstock</option>
-                        <option value="outofstock">Out of Stock</option>
-                    </select>
                 </div>
 
                 <div class="form-group">

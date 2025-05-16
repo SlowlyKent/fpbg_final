@@ -1,6 +1,6 @@
 <?php
 session_start();
-include ("connect.php");
+include ('connect.php');
 ?>
 
 
@@ -229,62 +229,69 @@ include ("connect.php");
     }
 
     // Process payment
-    async function processPayment() {
-        if (cart.length === 0) {
-            alert("Your cart is empty. Please add items before processing payment.");
-            return;
-        }
-
-        let totalAmount = parseFloat(document.getElementById("payableAmount").innerText);
-        let amountPaid = parseFloat(document.getElementById("paidAmount").value);
-        let discount = parseFloat(document.getElementById("discount").value) || 0;
-
-        if (isNaN(amountPaid) || amountPaid < totalAmount) {
-            alert("Insufficient payment. Please ensure the amount paid is correct.");
-            return;
-        }
-
-        let changeAmount = parseFloat(document.getElementById("change").innerText);
-
-        try {
-            const response = await fetch("save_transactions.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    cart: cart,
-                    totalAmount: totalAmount,
-                    amountPaid: amountPaid,
-                    change: changeAmount,
-                    discount: discount
-                })
-            });
-
-            const text = await response.text();
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch (e) {
-                console.error('Server response is not JSON:', text);
-                throw new Error("Failed to save transaction. Server response is not JSON.");
-            }
-
-            if (!response.ok || result.error) {
-                throw new Error(result.error || "Failed to save transaction.");
-            }
-
-            // Show success alert
-            alert("Payment processed successfully! Transaction ID: " + result.transaction_id);
-
-            // Reset the cart and UI
-            resetSystem();
-
-        } catch (error) {
-            console.error('Transaction Error:', error);
-            alert(error.message);
-        }
+     // Process payment
+async function processPayment() {
+    if (cart.length === 0) {
+        alert("Your cart is empty. Please add items before processing payment.");
+        return;
     }
+
+    let totalAmount = parseFloat(document.getElementById("payableAmount").innerText);
+    let amountPaid = parseFloat(document.getElementById("paidAmount").value);
+    let discount = parseFloat(document.getElementById("discount").value) || 0;
+
+    if (isNaN(amountPaid) || amountPaid < totalAmount) {
+        alert("Insufficient payment. Please ensure the amount paid is correct.");
+        return;
+    }
+
+    let changeAmount = parseFloat(document.getElementById("change").innerText);
+
+    try {
+        const data = {
+            cart: cart,
+            totalAmount: totalAmount,
+            amountPaid: amountPaid,
+            change: changeAmount,
+            discount: discount
+        };
+
+        console.log('Sending data:', data); // Log the data being sent
+
+        const response = await fetch("save_transactions.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        const text = await response.text();
+        console.log(text); // Log the response text
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Server response is not JSON:', text);
+            throw new Error("Failed to save transaction. Server response is not JSON.");
+        }
+
+        if (!response.ok || result.error) {
+            throw new Error(result.error || "Failed to save transaction.");
+        }
+
+        // Show success alert
+        alert("Payment processed successfully! Transaction ID: " + result.transaction_id);
+
+        // Reset the cart and UI
+        resetSystem();
+
+    } catch (error) {
+        console.error('Transaction Error:', error);
+        alert(error.message);
+    }
+}
+
 
     // Reset UI and cart
     function resetSystem() {

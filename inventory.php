@@ -14,76 +14,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the raw POST data
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
-    
+
     if (!$data || !isset($data['cart']) || empty($data['cart'])) {
         header('Content-Type: application/json');
         echo json_encode(["error" => "Invalid data received"]);
         exit();
     }
-    
+
     $cart = $data['cart'];
     $transactionId = isset($data['transaction_id']) ? $data['transaction_id'] : null;
-    
-    // Begin transaction
-    $conn->begin_transaction();
-    
+
+    // Begin transaction and handle inventory updates
     try {
+        $conn->begin_transaction();
+
         foreach ($cart as $item) {
             $product_id = $item['id'];
             $quantity = $item['quantity'];
-            
-            // Update the inventory - reduce stock quantity
-            $stmt = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?");
-            $stmt->bind_param("is", $quantity, $product_id);
-            $result = $stmt->execute();
-            
-            if (!$result) {
-                throw new Exception("Failed to update inventory for product ID: $product_id");
-            }
-            
-            // Check if we need to update stock status based on remaining quantity
-            $stmt = $conn->prepare("SELECT stock_quantity FROM products WHERE product_id = ?");
+
+            // Check if the product exists and has sufficient stock
+            $stmt = $conn->prepare("SELECT stock_quantity FROM products WHERE product_id = ? FOR UPDATE");
             $stmt->bind_param("s", $product_id);
             $stmt->execute();
             $result = $stmt->get_result();
-            
-            if ($row = $result->fetch_assoc()) {
-                $newQuantity = $row['stock_quantity'];
-                $newStatus = "in stock";
-                
-                // Set status based on remaining quantity
-                if ($newQuantity <= 0) {
-                    $newStatus = "out of stock";
-                } elseif ($newQuantity < 10) { // Assuming 10 is the threshold for "low stock"
-                    $newStatus = "low stock";
-                }
-                
-                // Update the status
-                $updateStmt = $conn->prepare("UPDATE products SET stock_status = ? WHERE product_id = ?");
-                $updateStmt->bind_param("ss", $newStatus, $product_id);
-                $updateStmt->execute();
+
+            if ($result->num_rows === 0) {
+                throw new Exception("Product not found: $product_id");
             }
-            
+
+            $row = $result->fetch_assoc();
+            if ($row['stock_quantity'] < $quantity) {
+                throw new Exception("Insufficient stock for product ID: $product_id");
+            }
+
+            // Update the inventory - reduce stock quantity
+            $stmt = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?");
+            $stmt->bind_param("is", $quantity, $product_id);
+            $stmt->execute();
+
+            // Update stock status based on remaining quantity
+            $newQuantity = $row['stock_quantity'] - $quantity;
+            $newStatus = "in stock";
+
+            if ($newQuantity === 0) {
+                $newStatus = "out-of-stock";
+            } elseif ($newQuantity < 2) { // Updated threshold for low stock
+                $newStatus = "low stock";
+            } else {
+                $newStatus = "in stock";
+            }
+
+            // Update the status
+            $updateStmt = $conn->prepare("UPDATE products SET stock_status = ? WHERE product_id = ?");
+            $updateStmt->bind_param("ss", $newStatus, $product_id);
+            if (!$updateStmt->execute()) {
+                error_log('Error updating stock_status in inventory.php: ' . $updateStmt->error);
+            }
+
             // Insert transaction details if transaction ID is provided
             if ($transactionId) {
-                $stmt = $conn->prepare("INSERT INTO transaction_details (transaction_id, product_id, quantity, price) 
-                                        VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO transaction_details (transaction_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
                 $price = $item['price'];
                 $stmt->bind_param("iidd", $transactionId, $product_id, $quantity, $price);
                 $stmt->execute();
             }
         }
-        
+
         // If everything is successful, commit the transaction
         $conn->commit();
-        
+
         header('Content-Type: application/json');
         echo json_encode(["success" => "Inventory updated successfully"]);
         exit();
     } catch (Exception $e) {
         // An error occurred, rollback the transaction
         $conn->rollback();
-        
+
         header('Content-Type: application/json');
         echo json_encode(["error" => $e->getMessage()]);
         exit();
@@ -95,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $query = "SELECT * FROM products";
 $result = $conn->query($query);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,7 +132,7 @@ $result = $conn->query($query);
         </ul>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
-                
+
     <div class="main-content" id="mainContent">
         <div class="notification-container" id="notificationContainer">
             <div class="notification-icon" onclick="toggleNotifications()">
@@ -152,8 +157,8 @@ $result = $conn->query($query);
         </div>
         <?php if (isset($_SESSION['success_message'])): ?>
             <div class="success-message" style="background-color: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border: 1px solid #c3e6cb; border-radius: 4px;">
-                <?php 
-                    echo $_SESSION['success_message']; 
+                <?php
+                    echo $_SESSION['success_message'];
                     unset($_SESSION['success_message']);
                 ?>
             </div>
@@ -163,38 +168,81 @@ $result = $conn->query($query);
                 <tr>
                     <th>Product ID</th>
                     <th>Product Name</th>
-                    <th>Brand</th>
                     <th>Stock Quantity</th>
                     <th>Unit of Measure</th>
-                    <th>Category</th>
                     <th>Cost Price</th>
                     <th>Selling Price</th>
+                    <th>Stock Status</th>
                     <th>Expiration Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if ($result && $result->num_rows > 0): ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($row['product_id']) ?></td>
-                            <td><?= htmlspecialchars($row['product_name']) ?></td>
-                            <td><?= htmlspecialchars($row['brand']) ?></td>
-                            <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
-                            <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
-                            <td><?= htmlspecialchars($row['category']) ?></td>
-                            <td><?= htmlspecialchars($row['cost_price']) ?></td>
-                            <td><?= htmlspecialchars($row['selling_price']) ?></td>
-                            <td><span class="status <?= strtolower(htmlspecialchars($row['stock_status'])) ?>"><?= htmlspecialchars($row['stock_status']) ?></span></td>
-                            <td><?= htmlspecialchars($row['expiration_date']) ?></td>
-                        </tr>
-                    <?php endwhile; ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+                $stockQuantity = (int)$row['stock_quantity'];
+                if ($stockQuantity === 0) {
+                    $displayStatus = "out-of-stock";
+                } elseif ($stockQuantity <= 2) {
+                    $displayStatus = "low stock";
+                } else {
+                    $displayStatus = "in stock";
+                }
+            ?>
+            <tr>
+                <td><?= htmlspecialchars($row['product_id']) ?></td>
+                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
+                <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
+                <td><?= htmlspecialchars($row['cost_price']) ?></td>
+                <td><?= htmlspecialchars($row['selling_price']) ?></td>
+    <td><span class="status <?= strtolower(str_replace([' ', '-'], '', $displayStatus)) ?>"><?= htmlspecialchars($displayStatus) ?></span></td>
+                <td><?= htmlspecialchars($row['expiration_date']) ?></td>
+                <td>
+                    <button onclick="editProduct('<?= $row['product_id'] ?>')">Edit</button>
+                    <button onclick="deleteProduct('<?= $row['product_id'] ?>')">Delete</button>
+                </td>
+            </tr>
+        <?php endwhile; ?>
                 <?php else: ?>
-                    <tr><td colspan="10">No inventory items found.</td></tr>
+                    <tr><td colspan="9">No inventory items found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+function editProduct(productId) {
+    // Redirect to an edit page or show a modal for editing
+    window.location.href = `edit_product.php?id=${productId}`;
+}
+
+function deleteProduct(productId) {
+    if (confirm("Are you sure you want to delete this product?")) {
+        fetch('delete_product.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `product_id=${productId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Product deleted successfully");
+                window.location.reload(); // Refresh the page to reflect changes
+            } else {
+                alert("Error deleting product: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
 
 </body>
 </html>

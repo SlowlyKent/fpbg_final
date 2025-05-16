@@ -1,0 +1,24 @@
+[16-May-2025 07:32:09 Europe/Berlin] No data received
+[16-May-2025 07:33:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\fpbg_final\save_transactions.php:30
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\fpbg_final\save_transactions.php on line 30
+[16-May-2025 07:34:01 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\fpbg_final\save_transactions.php:30
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\fpbg_final\save_transactions.php on line 30
+[16-May-2025 07:34:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\fpbg_final\save_transactions.php:30
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\fpbg_final\save_transactions.php on line 30
+[16-May-2025 07:34:04 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\fpbg_final\save_transactions.php:30
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\fpbg_final\save_transactions.php on line 30
+[16-May-2025 07:40:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\fpbg_final\save_transactions.php:30
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\fpbg_final\save_transactions.php on line 30
+[16-May-2025 07:43:11 Europe/Berlin] Failed to save transaction: Prepare failed: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'change, discount) VALUES (?, ?, ?, ?, ?)' at line 1
+[16-May-2025 08:32:35 Europe/Berlin] Failed to save transaction: Prepare failed: Table 'fpbg_final.inventory' doesn't exist
+[16-May-2025 08:32:40 Europe/Berlin] Failed to save transaction: Prepare failed: Table 'fpbg_final.inventory' doesn't exist
