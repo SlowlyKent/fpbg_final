@@ -12,6 +12,10 @@ include ('connect.php');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FPBG STOCK CASHIERING SYSTEM</title>
     <link rel="stylesheet" href="cashiering.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
 </head>
 <body>
 <form method="POST" action="dashboard.php">
@@ -23,6 +27,7 @@ include ('connect.php');
         <div class="stock">STOCK</div>
         <div class="cashiering">CASHIERING SYSTEM</div>
     </div>
+    <?php include 'notification_ui.php'; ?>
     <div class="total">Total: $<span id="totalAmount">0.00</span></div>
 
     <h3>Product ID / Product Code</h3>
@@ -320,8 +325,13 @@ async function processPayment() {
         // Show success alert
         alert("Payment processed successfully! Transaction ID: " + result.transaction_id);
 
+        // Dispatch transaction completed notification
+        var event = new CustomEvent('newNotification', { detail: 'Transaction completed' });
+        document.dispatchEvent(event);
+
         // Reset the cart and UI
         resetSystem();
+
 
     } catch (error) {
         console.error('Transaction Error:', error);

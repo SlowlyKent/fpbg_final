@@ -54,11 +54,13 @@ try {
     // Commit the transaction if everything is successful
     $conn->commit();
 
-    // Return success response
     echo json_encode(["success" => "Transaction processed successfully"]);
+
 } catch (Exception $e) {
     // Rollback transaction if there is any error
     $conn->rollback();
     echo json_encode(["error" => "Transaction failed: " . $e->getMessage()]);
 }
+
+$conn->close();
 ?>

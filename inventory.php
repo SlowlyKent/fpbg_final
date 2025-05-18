@@ -2,6 +2,7 @@
 // inventory.php - View and manage inventory
 session_start();
 include("connect.php");
+include("stock_helper.php");
 
 // Ensure the user is logged in
 if (!isset($_SESSION['user_id']) || (!in_array($_SESSION['role'], ['admin', 'staff']))) {
@@ -52,14 +53,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("is", $quantity, $product_id);
             $stmt->execute();
 
-            // Update stock status based on remaining quantity
+            // Calculate new quantity after update
             $newQuantity = $row['stock_quantity'] - $quantity;
-            $newStatus = "in stock";
 
+            // Update stock status based on remaining quantity
             if ($newQuantity === 0) {
                 $newStatus = "out-of-stock";
-            } elseif ($newQuantity < 2) { // Updated threshold for low stock
+                // Add out of stock notification
+                $notif_msg = "Product {$product_id} is now out of stock!";
+                $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+                $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+                $notif_stmt->execute();
+            } elseif ($newQuantity < 10) { // Threshold for low stock
                 $newStatus = "low stock";
+                // Add low stock notification
+                $notif_msg = "Low stock alert: Product {$product_id} has only {$newQuantity} units remaining!";
+                $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+                $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+                $notif_stmt->execute();
             } else {
                 $newStatus = "in stock";
             }
@@ -71,11 +82,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log('Error updating stock_status in inventory.php: ' . $updateStmt->error);
             }
 
+            include_once 'notification_helper.php';
+            // Insert low stock notification if needed
+            if ($newStatus === "low stock") {
+                $notifMessage = "Stock is running low for product: " . $product_id;
+                create_notification($conn, $_SESSION['user_id'], $notifMessage);
+            }
+
             // Insert transaction details if transaction ID is provided
             if ($transactionId) {
-                $stmt = $conn->prepare("INSERT INTO transaction_details (transaction_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
-                $price = $item['price'];
-                $stmt->bind_param("iidd", $transactionId, $product_id, $quantity, $price);
+                $stmt = $conn->prepare("INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_out')");
+                $stmt->bind_param("ssd", $transactionId, $product_id, $quantity);
                 $stmt->execute();
             }
         }
@@ -97,27 +114,197 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // For GET requests - display the inventory page
-// Query to get inventory data
-$query = "SELECT * FROM products";
+// Query to get inventory data with additional stock information
+$query = "
+    SELECT p.*,
+           COALESCE(
+               (SELECT SUM(st.quantity)
+                FROM stock_transactions st
+                WHERE st.product_id = p.product_id
+                AND st.transaction_type = 'stock_out'
+                AND st.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+               ), 0
+           ) as monthly_sales
+    FROM products p
+";
 $result = $conn->query($query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPBG Stock Inventory</title>
-    <link rel="stylesheet" href="inventory.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventory</title>
+    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script defer src="inventory.js"></script>
+    <script defer src="js/notifications.js"></script>
+    <script defer src="js/inventory.js"></script>
+    <style>
+        .inventory-container {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .inventory-title {
+            font-size: 24px;
+            color: #003366;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #003366;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .instock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .lowstock {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .outofstock {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 4px;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .criticalstock {
+            background-color: #ffe5e5;
+        }
+        
+        .status-cell {
+            font-weight: bold;
+        }
+        
+        .status-cell.criticalstock {
+            color: #dc3545;
+        }
+        
+        .status-cell.lowstock {
+            color: #856404;
+        }
+        
+        .status-cell.outofstock {
+            color: #721c24;
+        }
+        
+        .status-cell.instock {
+            color: #155724;
+        }
+        
+        .days-inventory {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .avg-sales {
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard-container" id="dashboardContainer">
     <div class="sidebar" id="sidebar">
-        <h2>FPBG STOCK</h2>
+        <h2>FPBG<br>STOCK</h2>
         <ul>
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
                 <a href="#" class="back-btn" id="backBtn" onclick="backToDashboard()" style="display: none;">Back to Dashboard</a>
                 <li><a href="cashiering-admin.php">Cashiering</a></li>
                 <li><a href="dashboard.php">Dashboard</a></li>
@@ -126,8 +313,8 @@ $result = $conn->query($query);
                 <li><a href="stock_out.php">Stock Out</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
-            <?php elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'staff'): ?>
-                <li><a href="#" onclick="loadPage('Cashiering.php', event, true)">Cashiering</a></li>
+            <?php elseif ($_SESSION['role'] === 'staff'): ?>
+                <li><a href="cashiering.php">Cashiering</a></li>
             <?php endif; ?>
         </ul>
         <a href="logout.php" class="logout-btn">Logout</a>
@@ -135,116 +322,141 @@ $result = $conn->query($query);
 
     <div class="main-content" id="mainContent">
         <div class="notification-container" id="notificationContainer">
-            <div class="notification-icon" onclick="toggleNotifications()">
+            <div class="notification-icon">
                 <i class="fa-solid fa-bell"></i>
-                <span class="notification-badge" id="notifBadge">3</span>
+                <span class="notification-badge" id="notifBadge">0</span>
             </div>
             <div class="notification-dropdown" id="notifDropdown">
                 <h4>Notifications</h4>
                 <ul id="notifList">
-                    <li>New stock added</li>
-                    <li>Stock running low</li>
-                    <li>Transaction completed</li>
+                    <!-- Notifications will be dynamically inserted here -->
                 </ul>
             </div>
         </div>
 
-        <div class="search-bar" id="searchBar">
-            <input type="text" placeholder="Search">
-        </div>
-        <div>
-            <span class="stock-status">Stock Status</span>
-        </div>
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="success-message" style="background-color: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border: 1px solid #c3e6cb; border-radius: 4px;">
-                <?php
-                    echo $_SESSION['success_message'];
-                    unset($_SESSION['success_message']);
-                ?>
+        <div class="inventory-container">
+            <div class="inventory-header">
+                <h2 class="inventory-title">Inventory Management</h2>
             </div>
-        <?php endif; ?>
-        <table>
-            <thead>
-                <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Brand</th>
-                    <th>Stock Quantity</th>
-                    <th>Unit of Measure</th>
-                    <th>Cost Price</th>
-                    <th>Selling Price</th>
-                    <th>Stock Status</th>
-                    <th>Category</th>
-                    <th>Expiration Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($result && $result->num_rows > 0): ?>
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <?php
-                $stockQuantity = (int)$row['stock_quantity'];
-                if ($stockQuantity === 0) {
-                    $displayStatus = "out-of-stock";
-                } elseif ($stockQuantity <= 2) {
-                    $displayStatus = "low stock";
-                } else {
-                    $displayStatus = "in stock";
-                }
-            ?>
-            <tr>
-                <td><?= htmlspecialchars($row['product_id']) ?></td>
-                <td><?= htmlspecialchars($row['product_name']) ?></td>
-                <td><?= htmlspecialchars($row['brand']) ?></td>
-                <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
-                <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
-                <td><?= htmlspecialchars($row['cost_price']) ?></td>
-                <td><?= htmlspecialchars($row['selling_price']) ?></td>
-    <td><span class="status <?= strtolower(str_replace([' ', '-'], '', $displayStatus)) ?>"><?= htmlspecialchars($displayStatus) ?></span></td>
-                <td><?= htmlspecialchars($row['category']) ?></td>
-                <td><?= htmlspecialchars($row['expiration_date']) ?></td>
-                    <button onclick="editProduct('<?= $row['product_id'] ?>')">Edit</button>
-                    <button onclick="deleteProduct('<?= $row['product_id'] ?>')">Delete</button>
-                </>
-            </tr>
-        <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="9">No inventory items found.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Search inventory..." id="searchInput">
+            </div>
+
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="success-message">
+                    <?php 
+                        echo $_SESSION['success_message'];
+                        unset($_SESSION['success_message']);
+                    ?>
+                </div>
+            <?php endif; ?>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Brand</th>
+                        <th>Stock Quantity</th>
+                        <th>Unit of Measure</th>
+                        <th>Cost Price</th>
+                        <th>Selling Price</th>
+                        <th>Stock Status</th>
+                        <th>Category</th>
+                        <th>Expiration Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($result && $result->num_rows > 0): ?>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <?php
+                                $stockQuantity = (int)$row['stock_quantity'];
+                                $avgDailySales = $row['monthly_sales'] / 30; // Calculate average daily sales
+                                
+                                // Get stock status using helper function
+                                $status = getStockStatus($stockQuantity, $avgDailySales);
+                                
+                                // Determine CSS class and display text
+                                switch ($status) {
+                                    case 'out of stock':
+                                        $statusClass = "outofstock";
+                                        $displayStatus = "Out of Stock";
+                                        break;
+                                    case 'critical stock':
+                                        $statusClass = "criticalstock";
+                                        $displayStatus = "Critical Stock";
+                                        break;
+                                    case 'low stock':
+                                        $statusClass = "lowstock";
+                                        $displayStatus = "Low Stock";
+                                        break;
+                                    default:
+                                        $statusClass = "instock";
+                                        $displayStatus = "In Stock";
+                                }
+                                
+                                // Calculate days of inventory
+                                $daysOfInventory = $avgDailySales > 0 ? ceil($stockQuantity / $avgDailySales) : null;
+                            ?>
+                            <tr class="<?= $statusClass ?>">
+                                <td><?= htmlspecialchars($row['product_id']) ?></td>
+                                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                                <td><?= htmlspecialchars($row['brand']) ?></td>
+                                <td>
+                                    <?= htmlspecialchars($stockQuantity) ?>
+                                    <?php if ($daysOfInventory !== null): ?>
+                                        <br>
+                                        <small class="days-inventory">
+                                            (<?= $daysOfInventory ?> days of inventory)
+                                        </small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
+                                <td>₱<?= number_format($row['cost_price'], 2) ?></td>
+                                <td>₱<?= number_format($row['selling_price'], 2) ?></td>
+                                <td class="status-cell <?= $statusClass ?>">
+                                    <?= $displayStatus ?>
+                                    <?php if ($avgDailySales > 0): ?>
+                                        <br>
+                                        <small class="avg-sales">
+                                            Avg. Daily Sales: <?= number_format($avgDailySales, 1) ?>
+                                        </small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($row['category']) ?></td>
+                                <td><?= htmlspecialchars($row['expiration_date']) ?></td>
+                                <td>
+                                    <button onclick="editProduct('<?= $row['product_id'] ?>')" class="btn-edit">Edit</button>
+                                    <button onclick="deleteProduct('<?= $row['product_id'] ?>')" class="btn-delete">Delete</button>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr><td colspan="11">No products found.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-function editProduct(productId) {
-    // Redirect to an edit page or show a modal for editing
-    window.location.href = `edit_product.php?id=${productId}`;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('tbody tr');
 
-function deleteProduct(productId) {
-    if (confirm("Are you sure you want to delete this product?")) {
-        fetch('delete_product.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `product_id=${productId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Product deleted successfully");
-                window.location.reload(); // Refresh the page to reflect changes
-            } else {
-                alert("Error deleting product: " + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
         });
-    }
-}
+    });
+});
 </script>
 
 </body>

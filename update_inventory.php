@@ -55,8 +55,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Set status based on remaining quantity
                 if ($newQuantity <= 0) {
                     $newStatus = "out of stock";
+                    // Add out of stock notification
+                    $notif_msg = "Product {$product_id} is now out of stock!";
+                    $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+                    $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+                    $notif_stmt->execute();
                 } elseif ($newQuantity < 10) { // Assuming 10 is the threshold for "low stock"
                     $newStatus = "low stock";
+                    // Add low stock notification
+                    $notif_msg = "Low stock alert: Product {$product_id} has only {$newQuantity} units remaining!";
+                    $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
+                    $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+                    $notif_stmt->execute();
+                } else {
+                    $newStatus = "in stock";
                 }
                 
                 // Update the status
@@ -67,10 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Insert transaction details if transaction ID is provided
             if ($transactionId) {
-                $stmt = $conn->prepare("INSERT INTO transaction_details (transaction_id, product_id, quantity, price) 
-                                        VALUES (?, ?, ?, ?)");
-                $price = $item['price'];
-                $stmt->bind_param("iidd", $transactionId, $product_id, $quantity, $price);
+                $stmt = $conn->prepare("INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_out')");
+                $stmt->bind_param("ssd", $transactionId, $product_id, $quantity);
                 $stmt->execute();
             }
         }

@@ -206,36 +206,29 @@ a:-webkit-any-link {
     font-size: 24px;
 }
 .notification-icon i {
+  cursor: pointer;
     position: relative;
-    background: white; /* Background color */
-    padding: 10px;
-    border-radius: 50%;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    display: inline-block;
 }
 
 .notification-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: red;
+       position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: red;
     color: white;
-    font-size: 12px;
-    padding: 3px 7px;
     border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
 }
 
 /* Notification Dropdown */
 .notification-dropdown {
-    display: none;
-    position: absolute;
-    top: 40px;
-    right: 0;
-    width: 200px;
-    background: white;
-    border-radius: 5px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    text-align: left;
+      display: block;
 }
 
 .notification-dropdown h4 {
@@ -298,4 +291,44 @@ body {
     color: #003366; /* Dark Blue color */
     font-weight: bold;
     font-size: 18px; /* Increase font size */
+}
+
+/* Action buttons */
+.edit-btn, .delete-btn {
+    padding: 6px 12px;
+    margin: 0 4px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #da190b;
+}
+
+/* Disable button styles */
+.edit-btn:disabled, .delete-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Add icon support if needed */
+.edit-btn i, .delete-btn i {
+    margin-right: 4px;
 }
