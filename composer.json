@@ -1,12 +1,30 @@
 {
-  "name": "fpbg/final-api",
-  "description": "API for fpbg_final project",
+  "name": "fpbg/stock-management",
+  "description": "FPBG Stock Management System",
+  "type": "project",
   "require": {
-    "firebase/php-jwt": "^6.0"
+    "php": ">=7.4",
+    "firebase/php-jwt": "^6.0",
+    "vlucas/phpdotenv": "^5.5",
+    "monolog/monolog": "^2.0"
   },
   "autoload": {
     "psr-4": {
-      "Fpbg\\": "src/"
+      "App\\": "src/"
+    },
+    "files": [
+      "includes/functions.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "FPBG Team",
+      "email": "team@fpbg.com"
     }
+  ],
+  "minimum-stability": "stable",
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
   }
 }
