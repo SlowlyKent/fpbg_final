@@ -205,7 +205,7 @@ $result = $conn->query($query);
             color: #721c24;
         }
 
-        .edit-btn, .delete-btn {
+        .edit-btn, .delete-btn, .btn-edit, .btn-delete {
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
@@ -215,21 +215,21 @@ $result = $conn->query($query);
             transition: background-color 0.3s;
         }
 
-        .edit-btn {
+        .edit-btn, .btn-edit {
             background-color: #007bff;
             color: white;
         }
 
-        .delete-btn {
+        .delete-btn, .btn-delete {
             background-color: #dc3545;
             color: white;
         }
 
-        .edit-btn:hover {
+        .edit-btn:hover, .btn-edit:hover {
             background-color: #0056b3;
         }
 
-        .delete-btn:hover {
+        .delete-btn:hover, .btn-delete:hover {
             background-color: #c82333;
         }
 
@@ -266,35 +266,65 @@ $result = $conn->query($query);
         .criticalstock {
             background-color: #ffe5e5;
         }
-        
+
         .status-cell {
             font-weight: bold;
         }
-        
+
         .status-cell.criticalstock {
             color: #dc3545;
         }
-        
+
         .status-cell.lowstock {
             color: #856404;
         }
-        
+
         .status-cell.outofstock {
             color: #721c24;
         }
-        
+
         .status-cell.instock {
             color: #155724;
         }
-        
+
         .days-inventory {
             color: #666;
             font-style: italic;
         }
-        
+
         .avg-sales {
             font-size: 0.85em;
             color: #666;
+        }
+
+        /* Additional styles for better table layout */
+        td, th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* Ensure the table is responsive */
+        .inventory-container {
+            overflow-x: auto;
+        }
+
+        /* Style for table header row */
+        thead tr {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        /* Alternating row colors */
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Hover effect for action buttons */
+        .btn-edit:hover, .btn-delete:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -396,23 +426,12 @@ $result = $conn->query($query);
                                         $statusClass = "instock";
                                         $displayStatus = "In Stock";
                                 }
-                                
-                                // Calculate days of inventory
-                                $daysOfInventory = $avgDailySales > 0 ? ceil($stockQuantity / $avgDailySales) : null;
                             ?>
                             <tr class="<?= $statusClass ?>">
                                 <td><?= htmlspecialchars($row['product_id']) ?></td>
                                 <td><?= htmlspecialchars($row['product_name']) ?></td>
                                 <td><?= htmlspecialchars($row['brand']) ?></td>
-                                <td>
-                                    <?= htmlspecialchars($stockQuantity) ?>
-                                    <?php if ($daysOfInventory !== null): ?>
-                                        <br>
-                                        <small class="days-inventory">
-                                            (<?= $daysOfInventory ?> days of inventory)
-                                        </small>
-                                    <?php endif; ?>
-                                </td>
+                                <td><?= htmlspecialchars($stockQuantity) ?></td>
                                 <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
                                 <td>₱<?= number_format($row['cost_price'], 2) ?></td>
                                 <td>₱<?= number_format($row['selling_price'], 2) ?></td>

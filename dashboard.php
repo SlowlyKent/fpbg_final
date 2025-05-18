@@ -199,37 +199,33 @@ function loadPage(page, event = null, isCashiering = false) {
         document.getElementById('searchBar').style.display = 'none';
         document.getElementById('statCards').style.display = 'none';
         document.getElementById('chartsSection').style.display = 'none';
-
-        // Clear dashboard background
-        contentContainer.style.width = "100%";
-        contentContainer.style.margin = "0 auto";
-    } else {
-        // NORMAL dashboard view
-        document.getElementById('sidebar').style.display = 'block';
-        document.getElementById('notificationContainer').style.display = 'flex';
-        document.getElementById('searchBar').style.display = 'block';
-        document.getElementById('statCards').style.display = 'flex';
-        document.getElementById('chartsSection').style.display = 'flex';
-
-        contentContainer.style.width = "";
-        contentContainer.style.margin = "";
+        document.getElementById('backBtn').style.display = 'block';
     }
 
-    contentContainer.innerHTML = "<p>Loading...</p>";
+    // Load the page content
+    fetch(page)
+        .then(response => response.text())
+        .then(html => {
+            contentContainer.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading page:', error);
+            contentContainer.innerHTML = '<p>Error loading content</p>';
+        });
+}
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", page, true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            contentContainer.innerHTML = xhr.responseText;
-        } else {
-            contentContainer.innerHTML = "<p style='color: red;'>Error loading page.</p>";
-        }
-    };
-    xhr.onerror = function () {
-        contentContainer.innerHTML = "<p style='color: red;'>Network error.</p>";
-    };
-    xhr.send();
+// Function to go back to dashboard
+function backToDashboard() {
+    // Show all dashboard elements
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('notificationContainer').style.display = 'block';
+    document.getElementById('searchBar').style.display = 'block';
+    document.getElementById('statCards').style.display = 'flex';
+    document.getElementById('chartsSection').style.display = 'block';
+    document.getElementById('backBtn').style.display = 'none';
+    
+    // Clear the content container
+    document.getElementById('contentContainer').innerHTML = '';
 }
 
 // Initialize charts
@@ -391,12 +387,6 @@ function refreshCharts() {
             console.error('Error loading chart data:', error);
         });
 }
-
-// Remove the old refresh button creation code
-document.addEventListener('DOMContentLoaded', function() {
-    // Initial load of charts
-    refreshCharts();
-});
 
 function resetCharts() {
     if (!confirm('Are you sure you want to reset all chart data to zero? This action cannot be undone.')) {

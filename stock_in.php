@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate input data
-    $product_id = htmlspecialchars(trim($_POST['product_id']));
     $product_name = htmlspecialchars(trim($_POST['product_name']));
     $brand = htmlspecialchars(trim($_POST['brand']));
     $stock_quantity = (int) htmlspecialchars(trim($_POST['stock_quantity']));
@@ -24,92 +23,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        // Check if the product ID already exists
-        $check_sql = "SELECT * FROM products WHERE product_id = ?";
-        $check_stmt = $conn->prepare($check_sql);
+        // New product, insert record
+        $insert_sql = "INSERT INTO products (product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_stmt = $conn->prepare($insert_sql);
 
-        if ($check_stmt === false) {
-            throw new Exception('Error in preparing check statement: ' . $conn->error);
+        if ($insert_stmt === false) {
+            throw new Exception('Error in preparing insert statement: ' . $conn->error);
         }
 
-        $check_stmt->bind_param("s", $product_id);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
+        $insert_stmt->bind_param("ssissdds", 
+            $product_name, 
+            $brand, 
+            $stock_quantity, 
+            $unit_of_measure, 
+            $category, 
+            $cost_price, 
+            $selling_price, 
+            $expiration_date
+        );
 
-        if ($check_result && $check_result->num_rows > 0) {
-            // Product exists, update the stock quantity
-            $row = $check_result->fetch_assoc();
-            $new_stock_quantity = $row['stock_quantity'] + $stock_quantity;
-
-            // Update product
-            $update_sql = "UPDATE products SET stock_quantity = ? WHERE product_id = ?";
-            $update_stmt = $conn->prepare($update_sql);
-
-            if ($update_stmt === false) {
-                throw new Exception('Error in preparing update statement: ' . $conn->error);
-            }
-
-            $update_stmt->bind_param("is", $new_stock_quantity, $product_id);
-
-            if (!$update_stmt->execute()) {
-                throw new Exception('Error updating record: ' . $update_stmt->error);
-            }
-
-            // Record stock-in transaction
-            $transaction_id = uniqid('STKN', true);
-            $stock_trans_sql = "INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_in')";
-            $stock_trans_stmt = $conn->prepare($stock_trans_sql);
-            $stock_trans_stmt->bind_param("ssd", $transaction_id, $product_id, $stock_quantity);
-            $stock_trans_stmt->execute();
-
-            // Update stock status and create notification if needed
-            updateStockStatus($conn, $product_id);
-
-            $_SESSION['success_message'] = 'Product stock updated successfully';
-        } else {
-            // New product, insert record
-            $insert_sql = "INSERT INTO products (product_id, product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $insert_stmt = $conn->prepare($insert_sql);
-
-            if ($insert_stmt === false) {
-                throw new Exception('Error in preparing insert statement: ' . $conn->error);
-            }
-
-            $insert_stmt->bind_param("sssissdds", 
-                $product_id, 
-                $product_name, 
-                $brand, 
-                $stock_quantity, 
-                $unit_of_measure, 
-                $category, 
-                $cost_price, 
-                $selling_price, 
-                $expiration_date
-            );
-
-            if (!$insert_stmt->execute()) {
-                throw new Exception('Error inserting record: ' . $insert_stmt->error);
-            }
-
-            // Record stock-in transaction for new product
-            $transaction_id = uniqid('STKN', true);
-            $stock_trans_sql = "INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_in')";
-            $stock_trans_stmt = $conn->prepare($stock_trans_sql);
-            $stock_trans_stmt->bind_param("ssd", $transaction_id, $product_id, $stock_quantity);
-            $stock_trans_stmt->execute();
-
-            // Create notification for new product
-            $notif_msg = "✨ NEW PRODUCT ADDED: {$product_name}\n";
-            $notif_msg .= "• Initial Stock: {$stock_quantity} {$unit_of_measure}\n";
-            $notif_msg .= "• Category: {$category}\n";
-            $notif_msg .= "• Selling Price: ₱" . number_format($selling_price, 2);
-            
-            $stmt = $conn->prepare("INSERT INTO notifications (user_id, message, type, is_read) VALUES (?, ?, 'success', 0)");
-            $stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
-            $stmt->execute();
-
-            $_SESSION['success_message'] = 'New product added successfully';
+        if (!$insert_stmt->execute()) {
+            throw new Exception('Error inserting record: ' . $insert_stmt->error);
         }
+
+        // Get the auto-generated product_id
+        $product_id = $conn->insert_id;
+
+        // Record stock-in transaction for new product
+        $transaction_id = uniqid('STKN', true);
+        $stock_trans_sql = "INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_in')";
+        $stock_trans_stmt = $conn->prepare($stock_trans_sql);
+        $stock_trans_stmt->bind_param("ssd", $transaction_id, $product_id, $stock_quantity);
+        $stock_trans_stmt->execute();
+
+        // Create notification for new product
+        $notif_msg = "✨ NEW PRODUCT ADDED: {$product_name}\n";
+        $notif_msg .= "• Initial Stock: {$stock_quantity} {$unit_of_measure}\n";
+        $notif_msg .= "• Category: {$category}\n";
+        $notif_msg .= "• Selling Price: ₱" . number_format($selling_price, 2);
+        
+        $stmt = $conn->prepare("INSERT INTO notifications (user_id, message, type, is_read) VALUES (?, ?, 'success', 0)");
+        $stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+        $stmt->execute();
+
+        $_SESSION['success_message'] = 'New product added successfully';
 
         // Commit transaction
         $conn->commit();
@@ -300,13 +257,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-container">
                 <form action="stock_in.php" method="POST">
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label for="product_id">
-                                <i class="fas fa-barcode"></i> Product ID
-                            </label>
-                            <input type="text" id="product_id" name="product_id" required />
-                        </div>
-
                         <div class="form-group">
                             <label for="product_name">
                                 <i class="fas fa-box"></i> Product Name
