@@ -28,6 +28,60 @@ include('connect.php');
         a:-webkit-any-link {
             color: black; /* Change link color to black */
         }
+        .refresh-btn {
+            padding: 10px 20px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            margin: 20px auto;
+        }
+        .refresh-btn:hover {
+            background-color: #357ABD;
+        }
+        .charts {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .charts-row {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        .chart-container {
+            position: relative;
+            flex: 1;
+            max-width: 600px;
+        }
+        .chart-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .reset-btn {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        .reset-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 
@@ -107,11 +161,21 @@ include('connect.php');
         </div>
 
         <div class="charts" id="chartsSection">
-            <div class="chart-container">
-                <canvas id="pieChart"></canvas>
+            <div class="charts-row">
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
             </div>
-            <div class="chart-container">
-                <canvas id="barChart"></canvas>
+            <div class="chart-buttons">
+                <button class="refresh-btn" onclick="refreshCharts()">
+                    <i class="fas fa-sync-alt"></i> Refresh Charts
+                </button>
+                <button class="reset-btn" onclick="resetCharts()">
+                    <i class="fas fa-trash"></i> Reset Data
+                </button>
             </div>
         </div>
 
@@ -243,6 +307,118 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error loading chart data:', error);
         });
 });
+
+// Function to refresh charts
+function refreshCharts() {
+    fetch('get_chart_data.php')
+        .then(response => response.json())
+        .then(data => {
+            // Destroy existing charts if they exist
+            const charts = Chart.getChart('pieChart');
+            if (charts) charts.destroy();
+            const chartb = Chart.getChart('barChart');
+            if (chartb) chartb.destroy();
+            
+            // Create new pie chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Cost', 'Revenue'],
+                    datasets: [{
+                        data: [data.totalCost || 0, data.totalRevenue || 0],
+                        backgroundColor: ['#1D2B53', '#7FDBFF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: 'Cost vs Revenue', 
+                            color: '#000', 
+                            font: { size: 16 } 
+                        },
+                        legend: { 
+                            labels: { color: '#000' } 
+                        }
+                    }
+                }
+            });
+
+            // Create new bar chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.months || ['January', 'February', 'March', 'April'],
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: data.monthlySales || [5000, 7000, 8000, 10000],
+                        backgroundColor: '#4A90E2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: 'Monthly Sales Report', 
+                            color: '#000', 
+                            font: { size: 16 } 
+                        },
+                        legend: { 
+                            labels: { color: '#000' } 
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#000' } },
+                        y: { 
+                            ticks: { 
+                                color: '#000',
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+        });
+}
+
+// Remove the old refresh button creation code
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial load of charts
+    refreshCharts();
+});
+
+function resetCharts() {
+    if (!confirm('Are you sure you want to reset all chart data to zero? This action cannot be undone.')) {
+        return;
+    }
+
+    fetch('reset_chart_data.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Chart data has been reset successfully.');
+                refreshCharts(); // Refresh charts to show zeroed data
+                location.reload(); // Reload page to update all statistics
+            } else {
+                alert('Error: ' + (data.error || 'Failed to reset chart data'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to reset chart data. Please try again.');
+        });
+}
 </script>
 
 </body>

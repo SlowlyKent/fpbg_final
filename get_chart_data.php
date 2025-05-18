@@ -11,19 +11,19 @@ if (!isset($_SESSION['user_id'])) {
 
 try {
     // Get total cost (sum of cost_price * stock_quantity)
-    $sql = "SELECT SUM(cost_price * stock_quantity) as total_cost FROM products";
+    $sql = "SELECT COALESCE(SUM(cost_price * stock_quantity), 0) as total_cost FROM products";
     $result = $conn->query($sql);
-    $totalCost = $result->fetch_assoc()['total_cost'] ?? 0;
+    $totalCost = (float)($result->fetch_assoc()['total_cost'] ?? 0);
 
     // Get total revenue (sum of total_amount from transactions)
-    $sql = "SELECT SUM(total_amount) as total_revenue FROM transactions";
+    $sql = "SELECT COALESCE(SUM(total_amount), 0) as total_revenue FROM transactions";
     $result = $conn->query($sql);
-    $totalRevenue = $result->fetch_assoc()['total_revenue'] ?? 0;
+    $totalRevenue = (float)($result->fetch_assoc()['total_revenue'] ?? 0);
 
     // Get monthly sales for the last 4 months
     $sql = "SELECT 
                 DATE_FORMAT(created_at, '%Y-%m') as month,
-                SUM(total_amount) as monthly_sales
+                COALESCE(SUM(total_amount), 0) as monthly_sales
             FROM transactions
             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
             GROUP BY DATE_FORMAT(created_at, '%Y-%m')
@@ -34,21 +34,18 @@ try {
     $monthlySales = [];
     $months = [];
     
-    while ($row = $result->fetch_assoc()) {
-        $date = new DateTime($row['month']);
-        $months[] = $date->format('F Y');
-        $monthlySales[] = (float)$row['monthly_sales'];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $date = new DateTime($row['month']);
+            $months[] = $date->format('F Y');
+            $monthlySales[] = (float)$row['monthly_sales'];
+        }
     }
 
-    // If we have less than 4 months of data, pad with zeros
-    while (count($months) < 4) {
-        array_unshift($months, 'No Data');
-        array_unshift($monthlySales, 0);
-    }
-
+    // Remove the padding of "No Data" - return empty arrays if no data exists
     echo json_encode([
-        'totalCost' => (float)$totalCost,
-        'totalRevenue' => (float)$totalRevenue,
+        'totalCost' => $totalCost,
+        'totalRevenue' => $totalRevenue,
         'months' => $months,
         'monthlySales' => $monthlySales
     ]);
@@ -56,10 +53,10 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'error' => 'Error fetching chart data: ' . $e->getMessage(),
-        'totalCost' => 4895,
-        'totalRevenue' => 7850,
-        'months' => ['January', 'February', 'March', 'April'],
-        'monthlySales' => [5000, 7000, 8000, 10000]
+        'totalCost' => 0,
+        'totalRevenue' => 0,
+        'months' => [],
+        'monthlySales' => []
     ]);
 }
 ?> 
