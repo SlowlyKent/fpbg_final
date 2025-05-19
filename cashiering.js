@@ -1,4 +1,5 @@
- let cart = [];
+// Initialize cart array
+    let cart = [];
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('product_id')?.addEventListener('keypress', function (e) {
@@ -295,56 +296,6 @@
         return '';
     }
 
-    // Update loadNotifications function
-    function loadNotifications() {
-        fetch('get_notifications.php')
-            .then(response => response.json())
-            .then(data => {
-                const notifList = document.getElementById('notifList');
-                const notifBadge = document.getElementById('notifBadge');
-                notifList.innerHTML = '';
 
-                if (!data || data.length === 0) {
-                    notifList.innerHTML = '<li class="notification-item"><div class="notification-content">No new notifications</div></li>';
-                    notifBadge.style.display = 'none';
-                    return;
-                }
 
-                notifBadge.style.display = 'flex';
-                notifBadge.textContent = data.length;
 
-                data.forEach(notif => {
-                    const typeClass = getNotificationTypeClass(notif.message);
-                    const date = new Date(notif.created_at);
-                    const formattedDate = date.toLocaleDateString('en-US', { 
-                        month: 'numeric', 
-                        day: 'numeric', 
-                        year: 'numeric'
-                    });
-                    const formattedTime = date.toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        hour12: true 
-                    });
-                    
-                    const li = document.createElement('li');
-                    li.className = `notification-item ${typeClass}`;
-                    li.innerHTML = `
-                        <div class="notification-content">${notif.message}</div>
-                        <div class="notification-timestamp">${formattedDate}, ${formattedTime}</div>
-                        <i class="fas fa-check notification-checkmark"></i>
-                    `;
-                    
-                    li.onclick = () => {
-                        updateNotification(notif.id);
-                        li.classList.add('read');
-                    };
-                    notifList.appendChild(li);
-                });
-            })
-            .catch(err => {
-                console.error('Error fetching notifications:', err);
-                const notifList = document.getElementById('notifList');
-                notifList.innerHTML = '<li class="notification-item notification-danger"><div class="notification-content">Error loading notifications</div></li>';
-            });
-    }

@@ -75,10 +75,10 @@ function updateNotificationUI(notifications) {
         const li = document.createElement('li');
         li.className = `notification-item ${getNotificationTypeClass(notification.type)}`;
         li.innerHTML = `
-            <div class="notification-content">
-                <p>${notification.message}</p>
-                <small>${new Date(notification.created_at).toLocaleString()}</small>
-            </div>
+        <div class="notification-content" onclick="markNotificationAsRead(${notification.id}, this)">
+            <p>${notification.message}</p>
+            <small>${new Date(notification.created_at).toLocaleString()}</small>
+        </div>
             <button onclick="markNotificationAsRead(${notification.id})" class="mark-read-btn">
                 <i class="fas fa-check"></i>
             </button>
@@ -112,7 +112,7 @@ function updateNotificationUI(notifications) {
     }
 }
 
-function markNotificationAsRead(notificationId) {
+function markNotificationAsRead(notificationId, element) {
     fetch('notifications_handler.php', {
         method: 'POST',
         headers: {
@@ -126,7 +126,25 @@ function markNotificationAsRead(notificationId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            pollNotifications(); // Refresh notifications
+            if (element) {
+                // Remove the notification item from the UI immediately
+                const li = element.closest('li.notification-item');
+                if (li) {
+                    li.remove();
+                }
+                // Update the badge count
+                const notifBadge = document.getElementById('notifBadge');
+                if (notifBadge) {
+                    const currentCount = parseInt(notifBadge.textContent, 10);
+                    const newCount = currentCount > 0 ? currentCount - 1 : 0;
+                    if (newCount === 0) {
+                        notifBadge.style.display = 'none';
+                    }
+                    notifBadge.textContent = newCount;
+                }
+            } else {
+                pollNotifications(); // Refresh notifications if no element provided
+            }
         } else {
             console.error('Error marking notification as read:', data.error);
         }
