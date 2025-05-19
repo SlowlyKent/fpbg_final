@@ -23,15 +23,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        // New product, insert record
-        $insert_sql = "INSERT INTO products (product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        // Generate a unique transaction ID first
+        $transaction_id = uniqid('STKN', true);
+
+        // Create the transaction record first
+        $trans_sql = "INSERT INTO transactions (transaction_id, total_amount, amount_paid, `change`, discount) VALUES (?, ?, ?, ?, ?)";
+        $trans_stmt = $conn->prepare($trans_sql);
+        $total_amount = $cost_price * $stock_quantity;
+        $amount_paid = $total_amount;
+        $change = 0;
+        $discount = 0;
+        
+        if ($trans_stmt === false) {
+            throw new Exception('Error in preparing transaction statement: ' . $conn->error);
+        }
+        
+        $trans_stmt->bind_param("sdddd", $transaction_id, $total_amount, $amount_paid, $change, $discount);
+        
+        if (!$trans_stmt->execute()) {
+            throw new Exception('Error creating transaction record: ' . $trans_stmt->error);
+        }
+
+        // Determine initial stock status
+        $stock_status = 'in stock';
+        if ($stock_quantity <= 0) {
+            $stock_status = 'out of stock';
+        } elseif ($stock_quantity < 10) { // Assuming 10 is the threshold for low stock
+            $stock_status = 'low stock';
+        }
+
+        // Now insert the new product
+        $insert_sql = "INSERT INTO products (product_name, brand, stock_quantity, unit_of_measure, category, cost_price, selling_price, expiration_date, stock_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $insert_stmt = $conn->prepare($insert_sql);
 
         if ($insert_stmt === false) {
             throw new Exception('Error in preparing insert statement: ' . $conn->error);
         }
 
-        $insert_stmt->bind_param("ssissdds", 
+        $insert_stmt->bind_param("ssissddss", 
             $product_name, 
             $brand, 
             $stock_quantity, 
@@ -39,22 +68,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $category, 
             $cost_price, 
             $selling_price, 
-            $expiration_date
+            $expiration_date,
+            $stock_status
         );
 
         if (!$insert_stmt->execute()) {
-            throw new Exception('Error inserting record: ' . $insert_stmt->error);
+            throw new Exception('Error inserting product record: ' . $insert_stmt->error);
         }
 
         // Get the auto-generated product_id
         $product_id = $conn->insert_id;
 
-        // Record stock-in transaction for new product
-        $transaction_id = uniqid('STKN', true);
+        // Convert product_id to string for stock_transactions
+        $product_id_str = (string)$product_id;
+
+        // Now record stock-in transaction
         $stock_trans_sql = "INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_in')";
         $stock_trans_stmt = $conn->prepare($stock_trans_sql);
-        $stock_trans_stmt->bind_param("ssd", $transaction_id, $product_id, $stock_quantity);
-        $stock_trans_stmt->execute();
+        
+        if ($stock_trans_stmt === false) {
+            throw new Exception('Error in preparing stock transaction statement: ' . $conn->error);
+        }
+        
+        $stock_trans_stmt->bind_param("ssd", $transaction_id, $product_id_str, $stock_quantity);
+        
+        if (!$stock_trans_stmt->execute()) {
+            throw new Exception('Error creating stock transaction record: ' . $stock_trans_stmt->error);
+        }
 
         // Create notification for new product
         $notif_msg = "✨ NEW PRODUCT ADDED: {$product_name}\n";

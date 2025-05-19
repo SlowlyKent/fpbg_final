@@ -326,6 +326,54 @@ $result = $conn->query($query);
             opacity: 0.9;
             transform: translateY(-1px);
         }
+
+        .expiring-soon {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .expired {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .expiration-warning {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .expiration-critical {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .expiration-warning-mild {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        /* Add these styles to your existing CSS */
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable i {
+            margin-left: 5px;
+            color: #999;
+        }
+
+        .sortable.asc i::before {
+            content: "\f0de"; /* fa-sort-up */
+            color: #003366;
+        }
+
+        .sortable.desc i::before {
+            content: "\f0dd"; /* fa-sort-down */
+            color: #003366;
+        }
     </style>
 </head>
 <body>
@@ -386,14 +434,14 @@ $result = $conn->query($query);
                 <thead>
                     <tr>
                         <th>Product ID</th>
-                        <th>Product Name</th>
-                        <th>Brand</th>
+                        <th class="sortable" data-sort="product_name">Product Name <i class="fas fa-sort"></i></th>
+                        <th class="sortable" data-sort="brand">Brand <i class="fas fa-sort"></i></th>
                         <th>Stock Quantity</th>
                         <th>Unit of Measure</th>
                         <th>Cost Price</th>
                         <th>Selling Price</th>
                         <th>Stock Status</th>
-                        <th>Category</th>
+                        <th class="sortable" data-sort="category">Category <i class="fas fa-sort"></i></th>
                         <th>Expiration Date</th>
                         <th>Actions</th>
                     </tr>
@@ -426,8 +474,26 @@ $result = $conn->query($query);
                                         $statusClass = "instock";
                                         $displayStatus = "In Stock";
                                 }
+
+                                $expirationClass = '';
+                                $expirationWarning = '';
+                                
+                                if (!empty($row['expiration_date'])) {
+                                    $daysUntilExpiration = (strtotime($row['expiration_date']) - time()) / (60 * 60 * 24);
+                                    
+                                    if ($daysUntilExpiration < 0) {
+                                        $expirationClass = 'expired';
+                                        $expirationWarning = '<span class="expiration-warning expiration-critical">EXPIRED</span>';
+                                    } elseif ($daysUntilExpiration <= 7) {
+                                        $expirationClass = 'expiring-soon';
+                                        $expirationWarning = '<span class="expiration-warning expiration-critical">Expires in ' . round($daysUntilExpiration) . ' days</span>';
+                                    } elseif ($daysUntilExpiration <= 30) {
+                                        $expirationClass = 'expiring-soon';
+                                        $expirationWarning = '<span class="expiration-warning expiration-warning-mild">Expires in ' . round($daysUntilExpiration) . ' days</span>';
+                                    }
+                                }
                             ?>
-                            <tr class="<?= $statusClass ?>">
+                            <tr class="<?= $statusClass ?> <?= $expirationClass ?>">
                                 <td><?= htmlspecialchars($row['product_id']) ?></td>
                                 <td><?= htmlspecialchars($row['product_name']) ?></td>
                                 <td><?= htmlspecialchars($row['brand']) ?></td>
@@ -445,7 +511,14 @@ $result = $conn->query($query);
                                     <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($row['category']) ?></td>
-                                <td><?= htmlspecialchars($row['expiration_date']) ?></td>
+                                <td>
+                                    <?php 
+                                        echo htmlspecialchars($row['expiration_date']);
+                                        if ($expirationWarning) {
+                                            echo '<br>' . $expirationWarning;
+                                        }
+                                    ?>
+                                </td>
                                 <td>
                                     <button onclick="editProduct('<?= $row['product_id'] ?>')" class="btn-edit">Edit</button>
                                     <button onclick="deleteProduct('<?= $row['product_id'] ?>')" class="btn-delete">Delete</button>
@@ -473,6 +546,61 @@ document.addEventListener('DOMContentLoaded', function() {
         tableRows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // Sorting functionality
+    const sortableHeaders = document.querySelectorAll('th.sortable');
+    let currentSort = {
+        column: null,
+        direction: 'asc'
+    };
+
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.sort;
+            const columnIndex = Array.from(header.parentElement.children).indexOf(header);
+
+            // Reset other headers
+            sortableHeaders.forEach(h => {
+                if (h !== header) {
+                    h.classList.remove('asc', 'desc');
+                }
+            });
+
+            // Toggle sort direction
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // Update header classes
+            header.classList.remove('asc', 'desc');
+            header.classList.add(currentSort.direction);
+
+            // Sort the table
+            const tbody = document.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            const sortedRows = rows.sort((a, b) => {
+                const aValue = a.children[columnIndex].textContent.trim();
+                const bValue = b.children[columnIndex].textContent.trim();
+
+                if (currentSort.direction === 'asc') {
+                    return aValue.localeCompare(bValue);
+                } else {
+                    return bValue.localeCompare(aValue);
+                }
+            });
+
+            // Clear and re-append sorted rows
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            sortedRows.forEach(row => tbody.appendChild(row));
         });
     });
 });

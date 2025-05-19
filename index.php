@@ -3,49 +3,58 @@ session_start();
 include 'connect.php'; 
 
 $error = '';
+$success_message = '';
+
+// Get and clear the success message if it exists
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = trim($_POST['username']);
-    $password = $_POST['password'];
-    
-    $sql = "SELECT user_id, username, password, role FROM users WHERE username = ?";
-    $stmt = $conn->prepare($sql);
-    
-    if (!$stmt) {
-        die("SQL error: " . $conn->error); 
-    }
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = trim($_POST['username']);
+        $password = $_POST['password'];
+        
+        $sql = "SELECT user_id, username, password, role FROM users WHERE username = ?";
+        $stmt = $conn->prepare($sql);
+        
+        if (!$stmt) {
+            die("SQL error: " . $conn->error); 
+        }
 
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
-        $row = $result->fetch_assoc();
-        $stored_hash = $row['password'];
+        if ($result->num_rows === 1) {
+            $row = $result->fetch_assoc();
+            $stored_hash = $row['password'];
 
-        if (password_verify($password, $stored_hash)) {
-            $_SESSION['user_id'] = $row['user_id']; 
-            $_SESSION['username'] = $row['username'];
-            $_SESSION['role'] = $row['role'];
+            if (password_verify($password, $stored_hash)) {
+                $_SESSION['user_id'] = $row['user_id']; 
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['role'] = $row['role'];
 
-            $role = $_SESSION['role'];
-            if ($row['role'] == 'admin') {
-                header("Location: dashboard.php");
-                exit();
-            } else if ($row['role'] == 'staff') {
-                header("Location: cashiering-staff.php");
-                exit();
+                $role = $_SESSION['role'];
+                if ($row['role'] == 'admin') {
+                    header("Location: dashboard.php");
+                    exit();
+                } else if ($row['role'] == 'staff') {
+                    header("Location: cashiering-staff.php");
+                    exit();
+                } else {
+                    $error = "Invalid role.";
+                }
             } else {
-                $error = "Invalid role.";
+                $error = "Incorrect password!";
             }
         } else {
-            $error = "Incorrect password!";
+            $error = "Username not found.";
         }
-    } else {
-        $error = "Username not found.";
-    }
 
-    $stmt->close();
+        $stmt->close();
+    }
 } 
 ?>
 
@@ -96,6 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .error-message {
             background-color: #f8d7da;
             color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
             padding: 10px;
             border-radius: 4px;
             margin-bottom: 20px;
@@ -168,6 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="login-container">
         <div class="logo">FPBG<br>STOCK</div>
         <h2 class="login-title">Sign In</h2>
+        
+        <?php if ($success_message): ?>
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <?= htmlspecialchars($success_message) ?>
+            </div>
+        <?php endif; ?>
         
         <?php if ($error): ?>
             <div class="error-message">

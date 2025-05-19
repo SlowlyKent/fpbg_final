@@ -6,8 +6,8 @@ A comprehensive stock management and point-of-sale system.
 ```
 fpbg_final/
 ├── config/
-│   ├── config.php
-│   └── database.php
+│   ├── 
+│   └── connect.php
 ├── public/
 │   ├── css/
 │   ├── js/
@@ -33,17 +33,10 @@ fpbg_final/
     └── vendor/
 ```
 
-## Setup Instructions
-1. Configure your database settings in `config/database.php`
-2. Import the SQL files from the `database` directory
-3. Ensure proper permissions on directories
-4. Configure your web server to point to the `public` directory
 
-## Requirements
-- PHP 7.4 or higher
-- MySQL 5.7 or higher
-- Apache/Nginx web server
-- Composer for dependency management
+
+
+
 
 SlowlyKent = Felicia
 spiegel123 = Gagni
