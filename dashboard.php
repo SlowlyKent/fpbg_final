@@ -101,6 +101,7 @@ include('connect.php');
             <li><a href="stock_out.php">Stock Out</a></li>
             <li><a href="create.php">Create User</a></li>
             <li><a href="read.php">View Users</a></li>
+            <li><a href="check_expiration.php">Check Expiration Products</a></li>
         <?php elseif ($_SESSION['role'] === 'staff'): ?>
             <li><a href="#" onclick="loadPage('transaction.php', event, true)">Cashiering</a></li>
         <?php endif; ?>

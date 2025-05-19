@@ -327,33 +327,6 @@ $result = $conn->query($query);
             transform: translateY(-1px);
         }
 
-        .expiring-soon {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .expired {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .expiration-warning {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .expiration-critical {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .expiration-warning-mild {
-            background-color: #ffc107;
-            color: #000;
-        }
-
         /* Add these styles to your existing CSS */
         .sortable {
             cursor: pointer;
@@ -391,6 +364,7 @@ $result = $conn->query($query);
                 <li><a href="stock_out.php">Stock Out</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
+                <li><a href="check_expiration.php">Check Expiration Products</a></li>
             <?php elseif ($_SESSION['role'] === 'staff'): ?>
                 <li><a href="cashiering.php">Cashiering</a></li>
             <?php endif; ?>
@@ -442,7 +416,6 @@ $result = $conn->query($query);
                         <th>Selling Price</th>
                         <th>Stock Status</th>
                         <th class="sortable" data-sort="category">Category <i class="fas fa-sort"></i></th>
-                        <th>Expiration Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -474,26 +447,8 @@ $result = $conn->query($query);
                                         $statusClass = "instock";
                                         $displayStatus = "In Stock";
                                 }
-
-                                $expirationClass = '';
-                                $expirationWarning = '';
-                                
-                                if (!empty($row['expiration_date'])) {
-                                    $daysUntilExpiration = (strtotime($row['expiration_date']) - time()) / (60 * 60 * 24);
-                                    
-                                    if ($daysUntilExpiration < 0) {
-                                        $expirationClass = 'expired';
-                                        $expirationWarning = '<span class="expiration-warning expiration-critical">EXPIRED</span>';
-                                    } elseif ($daysUntilExpiration <= 7) {
-                                        $expirationClass = 'expiring-soon';
-                                        $expirationWarning = '<span class="expiration-warning expiration-critical">Expires in ' . round($daysUntilExpiration) . ' days</span>';
-                                    } elseif ($daysUntilExpiration <= 30) {
-                                        $expirationClass = 'expiring-soon';
-                                        $expirationWarning = '<span class="expiration-warning expiration-warning-mild">Expires in ' . round($daysUntilExpiration) . ' days</span>';
-                                    }
-                                }
                             ?>
-                            <tr class="<?= $statusClass ?> <?= $expirationClass ?>">
+                            <tr class="<?= $statusClass ?>">
                                 <td><?= htmlspecialchars($row['product_id']) ?></td>
                                 <td><?= htmlspecialchars($row['product_name']) ?></td>
                                 <td><?= htmlspecialchars($row['brand']) ?></td>
@@ -512,21 +467,13 @@ $result = $conn->query($query);
                                 </td>
                                 <td><?= htmlspecialchars($row['category']) ?></td>
                                 <td>
-                                    <?php 
-                                        echo htmlspecialchars($row['expiration_date']);
-                                        if ($expirationWarning) {
-                                            echo '<br>' . $expirationWarning;
-                                        }
-                                    ?>
-                                </td>
-                                <td>
                                     <button onclick="editProduct('<?= $row['product_id'] ?>')" class="btn-edit">Edit</button>
                                     <button onclick="deleteProduct('<?= $row['product_id'] ?>')" class="btn-delete">Delete</button>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="11">No products found.</td></tr>
+                        <tr><td colspan="10">No products found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
