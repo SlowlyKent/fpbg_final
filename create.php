@@ -71,60 +71,9 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create User</title>
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="create.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
-    <style>
-        .user-form-container {
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .user-form-header {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .user-form-title {
-            font-size: 24px;
-            color: #003366;
-        }
-
-        .user-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .user-form input,
-        .user-form select {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            width: 100%;
-        }
-
-        .user-form button {
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .user-form button:hover {
-            background-color: #0056b3;
-        }
-    </style>
 </head>
 <body>
 

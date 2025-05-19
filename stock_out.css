@@ -1,0 +1,110 @@
+.stock-out-container {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .stock-out-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stock-out-title {
+            font-size: 24px;
+            color: #003366;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #003366;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Add sorting styles */
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable i {
+            margin-left: 5px;
+            color: #999;
+        }
+
+        .sortable.asc i::before {
+            content: "\f0de"; /* fa-sort-up */
+            color: #003366;
+        }
+
+        .sortable.desc i::before {
+            content: "\f0dd"; /* fa-sort-down */
+            color: #003366;
+        }
+
+        .transaction-amount {
+            font-weight: 500;
+            color: #28a745;
+        }
+
+        .transaction-date {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .quantity-cell {
+            font-weight: 500;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        @media screen and (max-width: 768px) {
+            .stock-out-container {
+                padding: 15px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .stock-out-title {
+                font-size: 20px;
+            }
+        }

@@ -14,74 +14,12 @@ include('connect.php');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard</title>
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="dashboard1.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
     <style>
-        /* Inline CSS for testing */
-        .sidebar {
-            color: black; /* Change text color to black */
-        }
-        .sidebar ul li a {
-            color: black; /* Change link color to black */
-        }
-        a:-webkit-any-link {
-            color: black; /* Change link color to black */
-        }
-        .refresh-btn {
-            padding: 10px 20px;
-            background-color: #4A90E2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            margin: 20px auto;
-        }
-        .refresh-btn:hover {
-            background-color: #357ABD;
-        }
-        .charts {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        .charts-row {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-            justify-content: center;
-        }
-        .chart-container {
-            position: relative;
-            flex: 1;
-            max-width: 600px;
-        }
-        .chart-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .reset-btn {
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-        }
-        .reset-btn:hover {
-            background-color: #c82333;
-        }
+        
     </style>
 </head>
 

@@ -1,334 +1,207 @@
-html, body {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: 'Arial', sans-serif; /* Ensure the font is Arial */
-}
+.inventory-container {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
 
-/* Dashboard Container */
-.dashboard-container {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-}
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-/* Sidebar */
-.sidebar {
-    width: 250px; /* Adjust width as needed */
-    height: 100vh;
-    background-color: #f4f4f4; /* Light gray background */
-    color: #333; /* Dark gray text color */
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
+        .inventory-title {
+            font-size: 24px;
+            color: #003366;
+        }
 
-.sidebar h2 {
-    text-align: center;
-    color: #003366;
-    font-size: 24px; /* Increase font size */
-    font-weight: bold; /* Make the text bold */
-    margin-bottom: 20px;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
 
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
 
-.sidebar ul li {
-    padding: 15px;
-    margin: 10px 0;
-    background: #e0e0e0; /* Light gray background for list items */
-    border-radius: 5px;
-    text-align: center;
-    font-size: 18px; /* Increase font size */
-    font-weight: bold; /* Make the text bold */
-    transition: background-color 0.3s; /* Smooth transition for hover effect */
-}
+        th {
+            background-color: #f8f9fa;
+            color: #003366;
+            font-weight: 600;
+        }
 
-.sidebar ul li a {
-    text-decoration: none;
-    color: #333; /* Dark gray text color */
-    display: block; /* Make the anchor tag take full width */
-}
+        tr:hover {
+            background-color: #f5f5f5;
+        }
 
-.sidebar ul li:hover {
-    background: #c0c0c0; /* Slightly darker gray on hover */
-}
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
 
-.logout-btn {
-    text-decoration: none;
-    color: #003366; /* Blue color for logout link */
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 20px;
-    display: block;
-    text-align: center;
-}
+        .instock {
+            background-color: #d4edda;
+            color: #155724;
+        }
 
-.logout-btn:hover {
-    text-decoration: underline; /* Underline on hover */
-}
+        .lowstock {
+            background-color: #fff3cd;
+            color: #856404;
+        }
 
-/* Search Bar */
-.search-bar {
-    background: #003366;
-    padding: 10px;
-    width: 100%;
-    text-align: center;
-    margin-bottom: 20px; /* Add margin to separate from the table */
-}
+        .outofstock {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
-.search-bar input {
-    width: 40%;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
+        .edit-btn, .delete-btn, .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 4px;
+            transition: background-color 0.3s;
+        }
 
-/* Table */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px; /* Add margin to separate from the search bar */
-}
+        .edit-btn, .btn-edit {
+            background-color: #007bff;
+            color: white;
+        }
 
-thead {
-    background: #f4f4f4; /* Light gray background for header */
-    color: #000; /* Black text color */
-}
+        .delete-btn, .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
 
-th, td {
-    padding: 12px 15px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    color: #000; /* Black text color */
-}
+        .edit-btn:hover, .btn-edit:hover {
+            background-color: #0056b3;
+        }
 
-tbody tr:hover {
-    background-color: #f1f1f1;
-}
+        .delete-btn:hover, .btn-delete:hover {
+            background-color: #c82333;
+        }
 
-.status {
-    padding: 10px 15px; /* Added padding */
-    border-radius: 15px;
-    color: #fff;
-    font-size: 14px;
-    display: inline-block;
-}
+        .search-bar {
+            margin-bottom: 20px;
+        }
 
-.status.instock {
-    background: #4caf50; /* Green for in stock */
-}
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
 
-.status.overstock {
-    background: #2196f3; /* Blue for overstock */
-}
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
 
-.status.outofstock {
-    background: #f44336; /* Red for out of stock */
-}
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
 
-.status.out-of-stock {
-    background: #f44336; /* Red for out of stock */
-}
+        .criticalstock {
+            background-color: #ffe5e5;
+        }
 
-/* Cards */
-.stat-cards {
-    display: flex;
-    gap: 20px;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
+        .status-cell {
+            font-weight: bold;
+        }
 
-.stat-card {
-    background-color: #69a2ff;
-    color: black;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    width: 200px;
-}
+        .status-cell.criticalstock {
+            color: #dc3545;
+        }
 
-/* Charts */
-.chart-container {
-    flex: 1;
-    min-width: 400px;
-    height: 300px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+        .status-cell.lowstock {
+            color: #856404;
+        }
 
-canvas {
-    width: 100% !important;
-    height: 100% !important;
-}
+        .status-cell.outofstock {
+            color: #721c24;
+        }
 
-a:-webkit-any-link {
-    color: #333; /* Dark gray text color */
-    cursor: pointer;
-    text-decoration: underline;
-    text-decoration-color: #333;
-}
+        .status-cell.instock {
+            color: #155724;
+        }
 
-.main-content {
-    flex-grow: 1;
-    height: 100vh;
-    overflow: hidden;
-    background-color: #F8F9FA;
-    display: flex;
-    flex-direction: column;
-}
+        .days-inventory {
+            color: #666;
+            font-style: italic;
+        }
 
-.stat-cards, .charts {
-    flex-grow: 1;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-}
+        .avg-sales {
+            font-size: 0.85em;
+            color: #666;
+        }
 
-/* Notification Icon */
-.notification-container {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    cursor: pointer;
-}
-.notification-icon i {
-    color: #003366; /* Dark Blue Bell Icon */
-    font-size: 24px;
-}
-.notification-icon i {
-  cursor: pointer;
-    position: relative;
-    display: inline-block;
-}
+        /* Additional styles for better table layout */
+        td, th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
 
-.notification-badge {
-       position: absolute;
-    top: -10px;
-    right: -10px;
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-}
+        /* Ensure the table is responsive */
+        .inventory-container {
+            overflow-x: auto;
+        }
 
-/* Notification Dropdown */
-.notification-dropdown {
-      display: block;
-}
+        /* Style for table header row */
+        thead tr {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
 
-.notification-dropdown h4 {
-    margin: 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #ddd;
-}
+        /* Alternating row colors */
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
 
-.notification-dropdown ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        /* Hover effect for action buttons */
+        .btn-edit:hover, .btn-delete:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
 
-.notification-dropdown li {
-    padding: 8px;
-    border-bottom: 1px solid #f1f1f1;
-    font-size: 14px;
-}
+        /* Add these styles to your existing CSS */
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
 
-.notification-dropdown li:last-child {
-    border-bottom: none;
-}
+        .sortable i {
+            margin-left: 5px;
+            color: #999;
+        }
 
-.notification-dropdown li:hover {
-    background: #f7f7f7;
-    cursor: pointer;
-}
+        .sortable.asc i::before {
+            content: "\f0de"; /* fa-sort-up */
+            color: #003366;
+        }
 
-/* Additional Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-}
-
-.container {
-    display: flex;
-    min-height: 100vh;
-}
-
-.top-bar {
-    margin-bottom: 20px;
-}
-
-.top-bar input {
-    width: 300px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 30px;
-}
-
-.stock-status {
-    color: #003366; /* Dark Blue color */
-    font-weight: bold;
-    font-size: 18px; /* Increase font size */
-}
-
-/* Action buttons */
-.edit-btn, .delete-btn {
-    padding: 6px 12px;
-    margin: 0 4px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
-.edit-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.edit-btn:hover {
-    background-color: #45a049;
-}
-
-.delete-btn {
-    background-color: #f44336;
-    color: white;
-}
-
-.delete-btn:hover {
-    background-color: #da190b;
-}
-
-/* Disable button styles */
-.edit-btn:disabled, .delete-btn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-/* Add icon support if needed */
-.edit-btn i, .delete-btn i {
-    margin-right: 4px;
-}
+        .sortable.desc i::before {
+            content: "\f0dd"; /* fa-sort-down */
+            color: #003366;
+        }
