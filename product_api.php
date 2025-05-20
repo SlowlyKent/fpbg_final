@@ -31,17 +31,18 @@ switch ($method) {
     case "POST": // Create a new product
         if (!isset($input["product_name"], $input["stock_quantity"], $input["unit_of_measure"], 
                     $input["category"], $input["cost_price"], $input["selling_price"], 
-                    $input["stock_status"], $input["expiration_date"])) {
+                    $input["expiration_date"])) {
             echo json_encode(["error" => "Missing required fields"]);
             exit;
         }
+        $stock_status = isset($input["stock_status"]) ? $input["stock_status"] : "In Stock";
         $stmt = $conn->prepare("INSERT INTO products (product_name, stock_quantity, unit_of_measure, 
                                 category, cost_price, selling_price, stock_status, expiration_date) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sissddss", $input["product_name"], $input["stock_quantity"], 
                           $input["unit_of_measure"], $input["category"], 
                           $input["cost_price"], $input["selling_price"], 
-                          $input["stock_status"], $input["expiration_date"]);
+                          $stock_status, $input["expiration_date"]);
         echo json_encode(["success" => $stmt->execute()]);
         break;
 

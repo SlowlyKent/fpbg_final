@@ -1,0 +1,3 @@
+ALTER TABLE users
+ADD COLUMN api_key VARCHAR(64) NULL,
+ADD COLUMN api_key_expires DATETIME NULL; 

@@ -102,12 +102,13 @@ $conn->close();
                         <th><i class="fas fa-cubes"></i> Quantity</th>
                         <th class="sortable" data-sort="amount"><i class="fas fa-money-bill-wave"></i> Amount Paid <i class="fas fa-sort"></i></th>
                         <th class="sortable desc" data-sort="date"><i class="fas fa-calendar"></i> Transaction Date <i class="fas fa-sort"></i></th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($transactions)): ?>
                         <tr>
-                            <td colspan="6" class="empty-message">No transactions found</td>
+                            <td colspan="7" class="empty-message">No transactions found</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($transactions as $row): ?>
@@ -126,6 +127,11 @@ $conn->close();
                                         echo $date->format('M d, Y h:i A'); 
                                     ?>
                                 </td>
+                                <td>
+                                    <button class="delete-btn" data-transaction-id="<?php echo htmlspecialchars($row['transaction_id']); ?>">
+                                        Delete
+                                    </button>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -136,7 +142,62 @@ $conn->close();
 </div>
 
 <script src="stock_out.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const transactionId = this.getAttribute('data-transaction-id');
+            if (confirm('Are you sure you want to delete this stock out transaction? This action cannot be undone.')) {
+                deleteStockOut(transactionId);
+            }
+        });
+    });
+});
 
+function deleteStockOut(transactionId) {
+    const formData = new FormData();
+    formData.append('transaction_id', transactionId);
+
+    fetch('delete_stock_out.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Stock out transaction deleted successfully');
+            // Reload the page to reflect changes
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to delete stock out transaction'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the stock out transaction');
+    });
+}
+</script>
+
+<style>
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+</style>
 
 </body>
 </html>
