@@ -1,6 +1,8 @@
 <?php
 // edit_product.php - Edit a product
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include("connect.php");
 
 // Ensure the user is logged in and is an admin or staff
@@ -58,11 +60,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="inventory.css">
+    <link rel="stylesheet" href="css/edit_product.css">
+    <script>
+        function closeModal() {
+            window.location.href = 'inventory.php';
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-        <h1>Edit Product</h1>
+        <div class="modal-header">
+            <h1>Edit Product</h1>
+            <button onclick="closeModal()" class="close-btn">&times;</button>
+        </div>
         <?php if (isset($error)): ?>
             <div class="error-message"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>

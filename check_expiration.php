@@ -147,7 +147,7 @@ function checkExpirations() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Expiration check completed successfully. New notifications have been created.');
+                alert('Expiration check completed successfully.');
                 location.reload(); // Reload the page to show updated data
             } else {
                 alert('Error checking expirations. Please try again.');

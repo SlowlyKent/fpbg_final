@@ -20,10 +20,10 @@ function checkExpirations() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Expiration check completed successfully. New notifications have been created.');
+                alert(data.message);
                 location.reload(); // Reload the page to show updated data
             } else {
-                alert('Error checking expirations. Please try again.');
+                alert('Error checking expirations: ' + data.message);
             }
         })
         .catch(error => {

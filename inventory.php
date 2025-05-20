@@ -275,7 +275,7 @@ $result = $conn->query($query);
     </div>
 </div>
 
-<script src="inventory.js"></script>
+<script src="js/inventory.js" defer></script>
 
 </body>
 </html>

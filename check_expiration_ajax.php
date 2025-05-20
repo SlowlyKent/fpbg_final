@@ -13,6 +13,32 @@ function checkExpirationDates($conn) {
     // Get current date
     $currentDate = date('Y-m-d');
     
+    // First check if there are any products
+    $check_products = $conn->prepare("SELECT COUNT(*) as total FROM products");
+    if (!$check_products->execute()) {
+        return ['success' => false, 'message' => 'Error checking products'];
+    }
+    $total_products = $check_products->get_result()->fetch_assoc()['total'];
+    
+    if ($total_products === 0) {
+        return ['success' => true, 'message' => 'No products found in the system'];
+    }
+    
+    // Check if there are any products with expiration dates
+    $check_expirations = $conn->prepare("
+        SELECT COUNT(*) as total 
+        FROM products 
+        WHERE expiration_date IS NOT NULL
+    ");
+    if (!$check_expirations->execute()) {
+        return ['success' => false, 'message' => 'Error checking expiration dates'];
+    }
+    $total_with_expiration = $check_expirations->get_result()->fetch_assoc()['total'];
+    
+    if ($total_with_expiration === 0) {
+        return ['success' => true, 'message' => 'No products with expiration dates found'];
+    }
+    
     // Get products that will expire within 30 days or have already expired
     $stmt = $conn->prepare("
         SELECT product_id, product_name, expiration_date 
@@ -23,10 +49,11 @@ function checkExpirationDates($conn) {
     ");
     
     if (!$stmt->execute()) {
-        return false;
+        return ['success' => false, 'message' => 'Error checking expirations'];
     }
     
     $result = $stmt->get_result();
+    $notificationsCreated = false;
     
     while ($product = $result->fetch_assoc()) {
         $daysUntilExpiration = (strtotime($product['expiration_date']) - strtotime($currentDate)) / (60 * 60 * 24);
@@ -49,6 +76,7 @@ function checkExpirationDates($conn) {
         ");
         $notif_stmt->bind_param("iss", $_SESSION['user_id'], $message, $type);
         $notif_stmt->execute();
+        $notificationsCreated = true;
     }
     
     // Check for expired products
@@ -59,7 +87,7 @@ function checkExpirationDates($conn) {
     ");
     
     if (!$expired_stmt->execute()) {
-        return false;
+        return ['success' => false, 'message' => 'Error checking expired products'];
     }
     
     $expired_result = $expired_stmt->get_result();
@@ -75,18 +103,23 @@ function checkExpirationDates($conn) {
         ");
         $notif_stmt->bind_param("iss", $_SESSION['user_id'], $message, $type);
         $notif_stmt->execute();
+        $notificationsCreated = true;
     }
     
-    return true;
+    if (!$notificationsCreated) {
+        return ['success' => true, 'message' => 'No products are expiring soon or have expired'];
+    }
+    
+    return ['success' => true, 'message' => 'New expiration notifications have been created'];
 }
 
 // Run the expiration check and return the result
-$success = checkExpirationDates($conn);
+$result = checkExpirationDates($conn);
 
 // Close the database connection
 $conn->close();
 
 // Return JSON response
 header('Content-Type: application/json');
-echo json_encode(['success' => $success]);
+echo json_encode($result);
 ?> 

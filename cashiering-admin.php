@@ -45,7 +45,9 @@ include ('connect.php');
             
             <div class="input-group">
                 <label>Product ID / Product Code</label>
-                <input type="text" id="product_id" placeholder="Enter the Product ID">
+                <select id="product_id" class="product-select">
+                    <option value="">Select a product...</option>
+                </select>
             </div>
             
             <div class="input-group">
@@ -118,5 +120,29 @@ include ('connect.php');
         </div>
     </div>
     <script src="cashiering.js"></script>
+    <script>
+        // Fetch and populate product dropdown
+        async function loadProducts() {
+            try {
+                const response = await fetch('get_all_products.php');
+                const products = await response.json();
+                
+                const select = document.getElementById('product_id');
+                select.innerHTML = '<option value="">Select a product...</option>';
+                
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = `${product.name} (${product.brand})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        // Load products when page loads
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
 </body>
 </html>
