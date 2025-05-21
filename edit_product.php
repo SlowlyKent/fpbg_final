@@ -45,6 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssissddss", $productName, $brand, $stockQuantity, $unitOfMeasure, $category, $costPrice, $sellingPrice, $expirationDate, $productId);
 
     if ($stmt->execute()) {
+        // Add update notification
+        $notif_msg = "Product updated: {$productName}";
+        $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, type, is_read, created_at) VALUES (?, ?, 'info', 0, NOW())");
+        $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
+        $notif_stmt->execute();
+
         $_SESSION['success_message'] = "Product updated successfully";
         header("Location: inventory.php");
         exit();
