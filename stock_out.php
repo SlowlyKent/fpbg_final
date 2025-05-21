@@ -119,7 +119,19 @@ $conn->close();
                                     <small class="text-muted"><?php echo htmlspecialchars($row['product_id']); ?></small>
                                 </td>
                                 <td><?php echo htmlspecialchars($row['brand']); ?></td>
-                                <td class="quantity-cell"><?php echo htmlspecialchars($row['quantity']); ?> units</td>
+                                <td class="quantity-cell">
+                                    <?php
+                                        $quantity = floatval($row['quantity']);
+                                        if ($quantity < 1) {
+                                            // For values less than 1, show in grams
+                                            echo number_format($quantity * 1000, 0) . 'g';
+                                        } else {
+                                            // For values 1 or greater, show in kg with original decimal places
+                                            $decimalPlaces = strlen(substr(strrchr($quantity, "."), 1));
+                                            echo number_format($quantity, $decimalPlaces) . 'kg';
+                                        }
+                                    ?>
+                                </td>
                                 <td class="transaction-amount">₱<?php echo number_format($row['amount_paid'], 2); ?></td>
                                 <td class="transaction-date">
                                     <?php 
@@ -143,42 +155,86 @@ $conn->close();
 
 <script src="stock_out.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add event listeners to delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const transactionId = this.getAttribute('data-transaction-id');
-            if (confirm('Are you sure you want to delete this stock out transaction? This action cannot be undone.')) {
-                deleteStockOut(transactionId);
-            }
+    function deleteTransaction(transactionId) {
+        if (confirm('Are you sure you want to delete this transaction? This will restore the stock quantity.')) {
+            fetch('delete_stock_out.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    transaction_id: transactionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Transaction deleted successfully');
+                    location.reload();
+                } else {
+                    alert(data.error || 'Failed to delete transaction');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the transaction');
+            });
+        }
+    }
+
+    // Add sorting functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('table');
+        const headers = table.querySelectorAll('th.sortable');
+        
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                const sortBy = header.dataset.sort;
+                const isAsc = header.classList.contains('asc');
+                
+                // Remove sort classes from all headers
+                headers.forEach(h => h.classList.remove('asc', 'desc'));
+                
+                // Add sort class to clicked header
+                header.classList.add(isAsc ? 'desc' : 'asc');
+                
+                // Sort the table
+                sortTable(table, sortBy, isAsc);
+            });
         });
     });
-});
 
-function deleteStockOut(transactionId) {
-    const formData = new FormData();
-    formData.append('transaction_id', transactionId);
+    function sortTable(table, column, reverse) {
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        rows.sort((a, b) => {
+            const aValue = a.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent;
+            const bValue = b.querySelector(`td:nth-child(${getColumnIndex(column)})`).textContent;
+            
+            if (column === 'date') {
+                return reverse ? 
+                    new Date(bValue) - new Date(aValue) : 
+                    new Date(aValue) - new Date(bValue);
+            }
+            
+            return reverse ? 
+                bValue.localeCompare(aValue) : 
+                aValue.localeCompare(bValue);
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
 
-    fetch('delete_stock_out.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Stock out transaction deleted successfully');
-            // Reload the page to reflect changes
-            window.location.reload();
-        } else {
-            alert('Error: ' + (data.error || 'Failed to delete stock out transaction'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while deleting the stock out transaction');
-    });
-}
+    function getColumnIndex(column) {
+        const columnMap = {
+            'product': 2,
+            'brand': 3,
+            'amount': 5,
+            'date': 6
+        };
+        return columnMap[column] || 1;
+    }
 </script>
 
 <style>

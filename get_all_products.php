@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || (!in_array($_SESSION['role'], ['admin', 'sta
 }
 
 // Query the database for all products
-$stmt = $conn->prepare("SELECT product_id, product_name, brand, selling_price, stock_quantity FROM products WHERE stock_quantity > 0 ORDER BY product_name");
+$stmt = $conn->prepare("SELECT product_id, product_name, brand, selling_price, stock_quantity, unit_of_measure FROM products WHERE stock_quantity > 0 ORDER BY product_name");
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -21,7 +21,8 @@ while ($row = $result->fetch_assoc()) {
         'name' => $row['product_name'],
         'brand' => $row['brand'],
         'price' => (float)$row['selling_price'],
-        'stock' => (int)$row['stock_quantity']
+        'stock' => (int)$row['stock_quantity'],
+        'unit_of_measure' => $row['unit_of_measure']
     ];
 }
 

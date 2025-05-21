@@ -31,11 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         foreach ($cart as $item) {
             $product_id = $item['id'];
-            $quantity = $item['quantity'];
+            $quantity = floatval($item['quantity']);
+            $kilogram = floatval($item['kilogram']);
+            $effectiveQuantity = $quantity * $kilogram;
             
             // Update the inventory - reduce stock quantity
             $stmt = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?");
-            $stmt->bind_param("is", $quantity, $product_id);
+            $stmt->bind_param("ds", $effectiveQuantity, $product_id);
             $result = $stmt->execute();
             
             if (!$result) {
@@ -49,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->get_result();
             
             if ($row = $result->fetch_assoc()) {
-                $newQuantity = $row['stock_quantity'];
+                $newQuantity = floatval($row['stock_quantity']);
                 $newStatus = "in stock";
                 
                 // Set status based on remaining quantity
@@ -60,15 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
                     $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
                     $notif_stmt->execute();
-                } elseif ($newQuantity < 10) { // Assuming 10 is the threshold for "low stock"
+                } elseif ($newQuantity < 5000) { // Threshold for low stock (5000g = 5kg)
                     $newStatus = "low stock";
                     // Add low stock notification
-                    $notif_msg = "Low stock alert: Product {$product_id} has only {$newQuantity} units remaining!";
+                    $notif_msg = "Low stock alert: Product {$product_id} has only " . ($newQuantity >= 1000 ? number_format($newQuantity/1000, 2) . " kg" : $newQuantity . "g") . " remaining!";
                     $notif_stmt = $conn->prepare("INSERT INTO notifications (user_id, message, is_read, created_at) VALUES (?, ?, 0, NOW())");
                     $notif_stmt->bind_param("is", $_SESSION['user_id'], $notif_msg);
                     $notif_stmt->execute();
-                } else {
-                    $newStatus = "in stock";
                 }
                 
                 // Update the status
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insert transaction details if transaction ID is provided
             if ($transactionId) {
                 $stmt = $conn->prepare("INSERT INTO stock_transactions (transaction_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'stock_out')");
-                $stmt->bind_param("ssd", $transactionId, $product_id, $quantity);
+                $stmt->bind_param("ssd", $transactionId, $product_id, $effectiveQuantity);
                 $stmt->execute();
             }
         }

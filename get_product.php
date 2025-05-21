@@ -47,7 +47,7 @@ $productData = [
     'brand' => $product['brand'],
     'price' => (float)$product['selling_price'],
     'available_quantity' => (int)$product['stock_quantity'],
-    'unit' => $product['unit_of_measure'],
+    'unit_of_measure' => $product['unit_of_measure'],
     'category' => $product['category']
 ];
 

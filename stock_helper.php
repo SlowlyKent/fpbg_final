@@ -26,7 +26,7 @@ function getStockStatus($quantity, $avgDailySales) {
     // Define thresholds
     $criticalThreshold = 2; // Days of inventory
     $lowThreshold = 7; // Days of inventory
-    $quantityThreshold = 3; // Minimum quantity threshold
+    $quantityThreshold = 5000; // Minimum quantity threshold (5000g = 5kg)
     
     if ($quantity <= 0) {
         return 'out of stock';

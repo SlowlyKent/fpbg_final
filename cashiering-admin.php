@@ -13,7 +13,60 @@ include ('connect.php');
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
-    
+    <style>
+        .input-help {
+            display: block;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-btn:hover {
+            background-color: #c82333;
+        }
+
+        .product-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .product-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .product-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .product-price {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .no-products {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <div class="notification-container" id="notificationContainer">
@@ -55,9 +108,10 @@ include ('connect.php');
                 <input type="number" id="quantity" value="1" min="1">
             </div>
             
-            <div class="input-group">
+            <div class="input-group" id="kilogramGroup" style="display: none;">
                 <label>Kilogram (kg):</label>
                 <input type="number" id="kilogram" value="1" min="0.01" step="0.01">
+                <small class="input-help">Enter in grams (e.g., 0.90 for 90g) or kilograms (e.g., 1.5 for 1.5kg)</small>
             </div>
             
             <button class="add-button" onclick="addProduct()">Add</button>
@@ -120,29 +174,5 @@ include ('connect.php');
         </div>
     </div>
     <script src="cashiering.js"></script>
-    <script>
-        // Fetch and populate product dropdown
-        async function loadProducts() {
-            try {
-                const response = await fetch('get_all_products.php');
-                const products = await response.json();
-                
-                const select = document.getElementById('product_id');
-                select.innerHTML = '<option value="">Select a product...</option>';
-                
-                products.forEach(product => {
-                    const option = document.createElement('option');
-                    option.value = product.id;
-                    option.textContent = `${product.name} (${product.brand})`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading products:', error);
-            }
-        }
-
-        // Load products when page loads
-        document.addEventListener('DOMContentLoaded', loadProducts);
-    </script>
 </body>
 </html>

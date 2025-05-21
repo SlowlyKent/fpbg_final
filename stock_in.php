@@ -12,7 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate input data
     $product_name = htmlspecialchars(trim($_POST['product_name']));
     $brand = htmlspecialchars(trim($_POST['brand']));
-    $stock_quantity = (int) htmlspecialchars(trim($_POST['stock_quantity']));
+    $input_quantity = floatval(htmlspecialchars(trim($_POST['stock_quantity'])));
+    // Convert grams to kilograms (if input is less than 1, assume it's in grams)
+    $stock_quantity = $input_quantity < 1 ? $input_quantity * 1000 : $input_quantity;
     $unit_of_measure = htmlspecialchars(trim($_POST['unit_of_measure']));
     $category = htmlspecialchars(trim($_POST['category']));
     $cost_price = (float) htmlspecialchars(trim($_POST['cost_price']));
@@ -135,7 +137,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
     <style>
-        
+        .quantity-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quantity-input-group input[type="number"] {
+            flex: 1;
+        }
+
+        .quantity-input-group select {
+            width: 150px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 14px;
+        }
+
+        .quantity-input-group select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        #quantityPerUnitGroup {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        #quantityPerUnitGroup label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        #quantityPerUnitGroup input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        #quantityPerUnitGroup input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
     </style>
 </head>
 
@@ -216,17 +266,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div class="form-group">
-                            <label for="stock_quantity">
-                                <i class="fas fa-cubes"></i> Stock Quantity
-                            </label>
-                            <input type="number" id="stock_quantity" name="stock_quantity" required />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="unit_of_measure">
-                                <i class="fas fa-ruler"></i> Unit of Measure
-                            </label>
-                            <input type="text" id="unit_of_measure" name="unit_of_measure" required />
+                            <label for="stock_quantity">Stock Quantity:</label>
+                            <div class="quantity-input-group">
+                                <input type="number" id="stock_quantity" name="stock_quantity" step="0.001" min="0.001" required />
+                                <select id="unit_of_measure" name="unit_of_measure" required>
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="g">Grams (g)</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="box">Box</option>
+                                    <option value="pack">Pack</option>
+                                </select>
+                            </div>
+                            <small class="input-help">Enter the quantity and select the appropriate unit of measure</small>
                         </div>
 
                         <div class="form-group">
@@ -267,6 +318,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<script>
+document.getElementById('stock_in_form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const quantity = parseFloat(document.getElementById('stock_quantity').value);
+    const unit = document.getElementById('unit_of_measure').value;
+    
+    // Convert to kg if unit is grams
+    let effectiveQuantity = quantity;
+    if (unit === 'g') {
+        effectiveQuantity = quantity / 1000;
+    }
+    
+    // Create FormData object
+    const formData = new FormData(this);
+    formData.set('stock_quantity', effectiveQuantity);
+    
+    // Send the form data
+    fetch('save_stock_in.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Stock added successfully!');
+            window.location.href = 'inventory.php';
+        } else {
+            alert(data.error || 'Failed to add stock');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding stock');
+    });
+});
+</script>
 
 </body>
 </html>

@@ -72,14 +72,16 @@ try {
     }
 
     foreach ($cart as $item) {
-        if (!isset($item['product_id']) || !isset($item['quantity'])) {
+        if (!isset($item['product_id']) || !isset($item['quantity']) || !isset($item['kilogram'])) {
             throw new Exception("Invalid cart item data");
         }
 
         $productId = $item['product_id'];
         $quantity = floatval($item['quantity']);
+        $kilogram = floatval($item['kilogram']);
+        $effectiveQuantity = $quantity * $kilogram;
         
-        if (!$stockTransactionStmt->bind_param("ssd", $transactionId, $productId, $quantity)) {
+        if (!$stockTransactionStmt->bind_param("ssd", $transactionId, $productId, $effectiveQuantity)) {
             throw new Exception("Failed to bind stock transaction parameters: " . $stockTransactionStmt->error);
         }
         
@@ -94,7 +96,7 @@ try {
             throw new Exception("Failed to prepare update stock query: " . $conn->error);
         }
         
-        if (!$updateStockStmt->bind_param("ds", $quantity, $productId)) {
+        if (!$updateStockStmt->bind_param("ds", $effectiveQuantity, $productId)) {
             throw new Exception("Failed to bind update stock parameters: " . $updateStockStmt->error);
         }
         

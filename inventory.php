@@ -217,7 +217,7 @@ $result = $conn->query($query);
                     <?php if ($result && $result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <?php
-                                $stockQuantity = (int)$row['stock_quantity'];
+                                $stockQuantity = floatval($row['stock_quantity']);
                                 $avgDailySales = $row['monthly_sales'] / 30; // Calculate average daily sales
                                 
                                 // Get stock status using helper function
@@ -246,7 +246,27 @@ $result = $conn->query($query);
                                 <td><?= htmlspecialchars($row['product_id']) ?></td>
                                 <td><?= htmlspecialchars($row['product_name']) ?></td>
                                 <td><?= htmlspecialchars($row['brand']) ?></td>
-                                <td><?= htmlspecialchars($stockQuantity) ?></td>
+                                <td class="quantity-cell">
+                                    <?php
+                                        $quantity = floatval($row['stock_quantity']);
+                                        $unit = $row['unit_of_measure'];
+                                        
+                                        if ($unit === 'g') {
+                                            // For grams, show in grams
+                                            echo number_format($quantity * 1000, 0) . 'g';
+                                        } elseif ($unit === 'kg') {
+                                            // For kilograms, show in kg with original decimal places
+                                            $decimalPlaces = strlen(substr(strrchr($quantity, "."), 1));
+                                            echo number_format($quantity, $decimalPlaces) . 'kg';
+                                        } elseif ($unit === 'box' || $unit === 'pack') {
+                                            // For boxes and packs, show the unit
+                                            echo number_format($quantity, 0) . ' ' . $unit;
+                                        } else {
+                                            // For pieces and other units
+                                            echo number_format($quantity, 0) . ' ' . $unit;
+                                        }
+                                    ?>
+                                </td>
                                 <td><?= htmlspecialchars($row['unit_of_measure']) ?></td>
                                 <td>₱<?= number_format($row['cost_price'], 2) ?></td>
                                 <td>₱<?= number_format($row['selling_price'], 2) ?></td>
