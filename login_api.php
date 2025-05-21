@@ -37,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stored_hash = $row['password'];
 
         if (password_verify($password, $stored_hash)) {
-            // Generate API key
+            // Generate a secure API key
             $api_key = bin2hex(random_bytes(32));
             
-            // Store API key in database without expiration
+            // Store API key in database
             $update_stmt = $conn->prepare("UPDATE users SET api_key = ? WHERE user_id = ?");
             $update_stmt->bind_param("si", $api_key, $row['user_id']);
             

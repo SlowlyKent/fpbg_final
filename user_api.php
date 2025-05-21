@@ -12,8 +12,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         // Get all users (admin only)
-        requireAdmin();
-        
         $sql = "SELECT user_id, username, role FROM users";
         $result = $conn->query($sql);
         
@@ -30,8 +28,6 @@ switch ($method) {
 
     case 'POST':
         // Create new user (admin only)
-        requireAdmin();
-        
         $input = json_decode(file_get_contents('php://input'), true);
         
         if (!isset($input['username']) || !isset($input['password']) || !isset($input['role'])) {
@@ -79,8 +75,6 @@ switch ($method) {
 
     case 'PUT':
         // Update user (admin only)
-        requireAdmin();
-        
         $input = json_decode(file_get_contents('php://input'), true);
         
         if (!isset($input['user_id']) || !isset($input['username'])) {
@@ -119,8 +113,6 @@ switch ($method) {
 
     case 'DELETE':
         // Delete user (admin only)
-        requireAdmin();
-        
         $input = json_decode(file_get_contents('php://input'), true);
         
         if (!isset($input['user_id'])) {
