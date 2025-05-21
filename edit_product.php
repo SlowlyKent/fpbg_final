@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="css/edit_product.css">
+    <link rel="stylesheet" href="edit_product.css">
     <script>
         function closeModal() {
             window.location.href = 'inventory.php';
@@ -93,7 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="number" id="stock_quantity" name="stock_quantity" value="<?= htmlspecialchars($product['stock_quantity']) ?>" required>
 
             <label for="unit_of_measure">Unit of Measure:</label>
-            <input type="text" id="unit_of_measure" name="unit_of_measure" value="<?= htmlspecialchars($product['unit_of_measure']) ?>" required>
+            <select id="unit_of_measure" name="unit_of_measure" class="unit-select" required>
+                <option value="kg">Kilograms (kg)</option>
+                <option value="g">Grams (g)</option>
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="box">Box</option>
+                <option value="pack">Pack</option>
+            </select>
 
             <label for="category">Category:</label>
             <input type="text" id="category" name="category" value="<?= htmlspecialchars($product['category']) ?>" required>

@@ -1,0 +1,211 @@
+.user-form-container {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.user-form-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.user-form-title {
+    color: #333;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.user-form input,
+.user-form select {
+    padding: 0.8rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.user-form input:focus,
+.user-form select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.user-form input::placeholder {
+    color: #999;
+}
+
+.user-form select {
+    background-color: white;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+.user-form button {
+    background-color: #007bff;
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.user-form button:hover {
+    background-color: #357abd;
+}
+
+.user-form button:active {
+    transform: translateY(1px);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .user-form-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .user-form-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Error state styles */
+.user-form input.error,
+.user-form select.error {
+    border-color: #dc3545;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: -0.5rem;
+}
+
+/* Success message styles */
+.success-message {
+    color: #28a745;
+    font-size: 0.875rem;
+    margin-top: -0.5rem;
+}
+
+/* Stock Notification Styles */
+.stock-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 400px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.stock-notification i {
+    font-size: 1.25rem;
+}
+
+.stock-notification.low-stock {
+    border-left: 4px solid #ffc107;
+}
+
+.stock-notification.low-stock i {
+    color: #ffc107;
+}
+
+.stock-notification.critical-stock {
+    border-left: 4px solid #dc3545;
+}
+
+.stock-notification.critical-stock i {
+    color: #dc3545;
+}
+
+.stock-notification .notification-content {
+    flex: 1;
+}
+
+.stock-notification .notification-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.stock-notification .notification-message {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.stock-notification .close-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+
+.stock-notification .close-btn:hover {
+    color: #666;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.stock-notification.closing {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+/* Responsive Stock Notifications */
+@media screen and (max-width: 768px) {
+    .stock-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+    }
+}
