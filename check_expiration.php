@@ -82,7 +82,9 @@ include('connect.php');
             <table class="expiration-table">
                 <thead>
                     <tr>
+                        <th>Product ID</th>
                         <th>Product Name</th>
+                        <th>Brand</th>
                         <th>Expiration Date</th>
                         <th>Days Until Expiration</th>
                         <th>Status</th>
@@ -94,12 +96,12 @@ include('connect.php');
                     $currentDate = date('Y-m-d');
                     
                     // Get products that will expire within 30 days or have already expired
-                    $stmt = $conn->prepare("
-                        SELECT product_id, product_name, expiration_date 
-                        FROM products 
-                        WHERE expiration_date IS NOT NULL 
-                        ORDER BY expiration_date ASC
-                    ");
+$stmt = $conn->prepare("
+    SELECT product_id, product_name, brand, expiration_date 
+    FROM products 
+    WHERE expiration_date IS NOT NULL 
+    ORDER BY expiration_date ASC
+");
                     
                     if ($stmt->execute()) {
                         $result = $stmt->get_result();
@@ -126,7 +128,9 @@ include('connect.php');
                             
                             if ($statusClass) { // Only show products that are expired or will expire within 30 days
                                 echo "<tr>";
+                                echo "<td>{$product['product_id']}</td>";
                                 echo "<td>{$product['product_name']}</td>";
+                                echo "<td>{$product['brand']}</td>";
                                 echo "<td>{$product['expiration_date']}</td>";
                                 echo "<td>" . ($daysUntilExpiration < 0 ? "Expired " . abs($daysUntilExpiration) . " days ago" : $daysUntilExpiration . " days") . "</td>";
                                 echo "<td><span class='status-badge {$statusClass}'>{$statusText}</span></td>";
@@ -141,41 +145,7 @@ include('connect.php');
     </div>
 </div>
 
-<script>
-function checkExpirations() {
-    fetch('check_expiration_ajax.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Expiration check completed successfully.');
-                location.reload(); // Reload the page to show updated data
-            } else {
-                alert('Error checking expirations. Please try again.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to check expirations. Please try again.');
-        });
-}
-
-// Initialize notification system
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationIcon = document.querySelector('.notification-icon');
-    const notificationDropdown = document.getElementById('notifDropdown');
-
-    notificationIcon.addEventListener('click', function(e) {
-        e.stopPropagation();
-        notificationDropdown.style.display = notificationDropdown.style.display === 'block' ? 'none' : 'block';
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!notificationDropdown.contains(e.target) && !notificationIcon.contains(e.target)) {
-            notificationDropdown.style.display = 'none';
-        }
-    });
-});
-</script>
+<script src="check_expiration.js"></script>
 
 </body>
 </html>

@@ -13,7 +13,7 @@ if ($conn->connect_error) {
 
 // Fetch transactions from the database with brand information
 $sql = "
-    SELECT st.transaction_id, st.product_id, st.quantity, st.created_at, p.brand, p.product_name, t.amount_paid
+    SELECT st.transaction_id, st.product_id, st.quantity, st.created_at, p.brand, p.product_name, p.unit_of_measure, t.amount_paid
     FROM stock_transactions st
     JOIN products p ON st.product_id = p.product_id
     JOIN transactions t ON st.transaction_id = t.transaction_id
@@ -100,6 +100,7 @@ $conn->close();
                         <th class="sortable" data-sort="product"><i class="fas fa-box"></i> Product <i class="fas fa-sort"></i></th>
                         <th class="sortable" data-sort="brand"><i class="fas fa-tag"></i> Brand <i class="fas fa-sort"></i></th>
                         <th><i class="fas fa-cubes"></i> Quantity</th>
+                        <th><i class="fas fa-ruler"></i> Unit of Measure</th>
                         <th class="sortable" data-sort="amount"><i class="fas fa-money-bill-wave"></i> Amount Paid <i class="fas fa-sort"></i></th>
                         <th class="sortable desc" data-sort="date"><i class="fas fa-calendar"></i> Transaction Date <i class="fas fa-sort"></i></th>
                         <th>Actions</th>
@@ -111,7 +112,18 @@ $conn->close();
                             <td colspan="7" class="empty-message">No transactions found</td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($transactions as $row): ?>
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <tr>
+                <td colspan="7" class="success-message"><?php echo htmlspecialchars($_SESSION['success_message']); ?></td>
+            </tr>
+            <?php unset($_SESSION['success_message']); ?>
+        <?php endif; ?>
+        <?php if (isset($_GET['error'])): ?>
+            <tr>
+                <td colspan="7" class="error-message"><?php echo htmlspecialchars($_GET['error']); ?></td>
+            </tr>
+        <?php endif; ?>
+        <?php foreach ($transactions as $row): ?>
                             <tr>
                                 <td>#<?php echo htmlspecialchars($row['transaction_id']); ?></td>
                                 <td>
@@ -124,25 +136,29 @@ $conn->close();
                                         $quantity = floatval($row['quantity']);
                                         if ($quantity < 1) {
                                             // For values less than 1, show in grams
-                                            echo number_format($quantity * 1000, 0) . 'g';
+                                            echo number_format($quantity * 1000, 0);
                                         } else {
                                             // For values 1 or greater, show in kg with original decimal places
                                             $decimalPlaces = strlen(substr(strrchr($quantity, "."), 1));
-                                            echo number_format($quantity, $decimalPlaces) . 'kg';
+                                            echo number_format($quantity, $decimalPlaces);
                                         }
                                     ?>
                                 </td>
-                                <td class="transaction-amount">₱<?php echo number_format($row['amount_paid'], 2); ?></td>
-                                <td class="transaction-date">
+                        <td class="unit-o-measure">
+                            <?php echo htmlspecialchars($row['unit_of_measure']); ?>
+                        </td>
+                        <td class="transaction-amount">₱<?php echo number_format($row['amount_paid'], 2); ?></td>
+                        <td class="transaction-date">
                                     <?php 
                                         $date = new DateTime($row['created_at']);
                                         echo $date->format('M d, Y h:i A'); 
                                     ?>
                                 </td>
                                 <td>
-                                    <button class="delete-btn" data-transaction-id="<?php echo htmlspecialchars($row['transaction_id']); ?>">
-                                        Delete
-                                    </button>
+                                    <form method="POST" action="delete_stock_out.php" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                                        <input type="hidden" name="transaction_id" value="<?php echo htmlspecialchars($row['transaction_id']); ?>">
+                                        <button type="submit" class="delete-btn">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -237,23 +253,6 @@ $conn->close();
     }
 </script>
 
-<style>
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.delete-btn:hover {
-    background-color: #c82333;
-}
-</style>
 
 </body>
 </html>

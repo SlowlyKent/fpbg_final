@@ -1,4 +1,4 @@
- body {
+body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
@@ -222,8 +222,12 @@
             background: #dc3545;
         }
 
-        .remove-button {
-            background: #007bff;
+        .reset-button:hover {
+            background: #c82333;
+        }
+
+        .remove-btn {
+            background: #dc3545;
             color: white;
             border: none;
             padding: 5px 10px;
@@ -232,8 +236,8 @@
             transition: background-color 0.3s;
         }
 
-        .remove-button:hover {
-            background: #0056b3;
+        .remove-btn:hover {
+            background: #a71d2a;
         }
 
         .payment-inputs {
@@ -256,6 +260,7 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 16px;
         }
 
         .payment-info {
@@ -337,10 +342,6 @@
 
         .pay-button:hover {
             background: #218838;
-        }
-
-        .reset-button:hover {
-            background: #c82333;
         }
 
         .product-select {

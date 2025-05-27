@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Create notification for new product
-        $notif_msg = "✨ NEW PRODUCT ADDED: {$product_name}\n";
+        $notif_msg = "NEW PRODUCT ADDED: {$product_name}\n";
         $notif_msg .= "• Initial Stock: {$stock_quantity} {$unit_of_measure}\n";
         $notif_msg .= "• Category: {$category}\n";
         $notif_msg .= "• Selling Price: ₱" . number_format($selling_price, 2);

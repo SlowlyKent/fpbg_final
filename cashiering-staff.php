@@ -13,60 +13,6 @@ include ('connect.php');
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
-    <style>
-        .input-help {
-            display: block;
-            font-size: 0.8em;
-            color: #666;
-            margin-top: 4px;
-            font-style: italic;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .remove-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .remove-btn:hover {
-            background-color: #c82333;
-        }
-
-        .product-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .product-item:hover {
-            background-color: #f5f5f5;
-        }
-
-        .product-name {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .product-price {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .no-products {
-            padding: 20px;
-            text-align: center;
-            color: #666;
-        }
-    </style>
 </head>
 <body>
     <div class="notification-container" id="notificationContainer">
@@ -82,8 +28,8 @@ include ('connect.php');
         </div>
     </div>
     <div class="back-button">
-        <form method="POST" action="dashboard.php">
-            <button type="submit">Back to Dashboard</button>
+        <form method="POST" action="logout.php">
+            <button type="submit">Log Out</button>
         </form>
     </div>
 
