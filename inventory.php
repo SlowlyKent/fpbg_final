@@ -118,8 +118,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $query = "
     SELECT p.*,
            COALESCE(
-               (SELECT SUM(st.quantity)
+               (SELECT SUM(
+                    CASE 
+                        WHEN p.unit_of_measure = 'g' THEN st.quantity / 1000
+                        ELSE st.quantity
+                    END
+                )
                 FROM stock_transactions st
+                JOIN products p ON st.product_id = p.product_id
                 WHERE st.product_id = p.product_id
                 AND st.transaction_type = 'stock_out'
                 AND st.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -220,8 +226,8 @@ $result = $conn->query($query);
                                 $stockQuantity = floatval($row['stock_quantity']);
                                 $avgDailySales = $row['monthly_sales'] / 30; // Calculate average daily sales
                                 
-                                // Get stock status using helper function
-                                $status = getStockStatus($stockQuantity, $avgDailySales);
+                                // Get stock status using helper function, pass unit_of_measure
+                                $status = getStockStatus($stockQuantity, $avgDailySales, $row['unit_of_measure']);
                                 
                                 // Determine CSS class and display text
                                 switch ($status) {

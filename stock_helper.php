@@ -22,28 +22,47 @@ function getAverageDailySales($conn, $product_id, $days = 30) {
     return floatval($row['avg_daily_sales']);
 }
 
-function getStockStatus($quantity, $avgDailySales) {
+function getStockStatus($quantity, $avgDailySales, $unit_of_measure = null) {
     // Define thresholds
     $criticalThreshold = 2; // Days of inventory
     $lowThreshold = 7; // Days of inventory
-    $quantityThreshold = 5000; // Minimum quantity threshold (5000g = 5kg)
     
-    if ($quantity <= 0) {
+    if ($unit_of_measure !== null && in_array($unit_of_measure, ['pcs', 'box', 'pack'])) {
+        if ($quantity == 0) {
+            return 'out of stock';
+        } elseif ($quantity < 4) {
+            return 'low stock';
+        } else {
+            return 'in stock';
+        }
+    }
+    
+    // For weight units, define quantity threshold in kg
+    $quantityThresholdKg = 10; // 10 kg
+    
+    if ($unit_of_measure === 'g') {
+        // Convert grams to kilograms
+        $quantityKg = $quantity / 1000;
+    } elseif ($unit_of_measure === 'kg') {
+        $quantityKg = $quantity;
+    } else {
+        // If unit is unknown or not provided, assume quantity is in kg
+        $quantityKg = $quantity;
+    }
+    
+    if ($quantityKg <= 0) {
         return 'out of stock';
     }
     
-    // Always check quantity threshold first
-    if ($quantity < $quantityThreshold) {
+    if ($quantityKg < $quantityThresholdKg) {
         return 'low stock';
     }
     
-    // If there are no sales, return in stock (since we already checked quantity)
     if ($avgDailySales <= 0) {
         return 'in stock';
     }
     
-    // Calculate days of inventory for items with sales history
-    $daysOfInventory = $quantity / $avgDailySales;
+    $daysOfInventory = $quantityKg / $avgDailySales;
     
     if ($daysOfInventory <= $criticalThreshold) {
         return 'critical stock';

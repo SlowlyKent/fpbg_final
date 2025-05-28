@@ -32,6 +32,25 @@ if ($result->num_rows > 0) {
     }
 }
 
+// Get total sales
+$sql = "SELECT COALESCE(SUM(total_amount), 0) as total_sales FROM transactions";
+$result = $conn->query($sql);
+$totalSales = $result->fetch_assoc()['total_sales'];
+
+// Get COGS (cost of goods sold) from stock_transactions
+$sql = "SELECT COALESCE(SUM(st.quantity * p.cost_price), 0) as cogs
+        FROM stock_transactions st
+        JOIN products p ON st.product_id = p.product_id
+        WHERE st.transaction_type = 'stock_out'";
+$result = $conn->query($sql);
+if ($result === false) {
+    die('COGS Query failed: ' . $conn->error);
+}
+$cogs = $result->fetch_assoc()['cogs'];
+
+// Get net sales (total sales - COGS)
+$netSales = $totalSales - $cogs;
+
 $conn->close();
 ?>
 
@@ -134,13 +153,22 @@ $conn->close();
                                 <td class="quantity-cell">
                                     <?php
                                         $quantity = floatval($row['quantity']);
-                                        if ($quantity < 1) {
-                                            // For values less than 1, show in grams
-                                            echo number_format($quantity * 1000, 0);
+                                        $unit = $row['unit_of_measure'];
+                                        if ($unit === 'g') {
+                                            // Convert grams to kilograms for display
+                                            $quantity = $quantity / 1000;
+                                            echo number_format($quantity, 3);
+                                            echo ' kg';
+                                        } elseif ($unit === 'kg') {
+                                            // If quantity is large, assume it's in grams and convert
+                                            if ($quantity > 100) {
+                                                $quantity = $quantity / 1000;
+                                            }
+                                            echo number_format($quantity, 3);
+                                            echo ' kg';
                                         } else {
-                                            // For values 1 or greater, show in kg with original decimal places
-                                            $decimalPlaces = strlen(substr(strrchr($quantity, "."), 1));
-                                            echo number_format($quantity, $decimalPlaces);
+                                            echo number_format($quantity, 0);
+                                            echo ' ' . htmlspecialchars($unit);
                                         }
                                     ?>
                                 </td>

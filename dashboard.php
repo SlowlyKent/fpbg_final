@@ -70,19 +70,29 @@ include('connect.php');
             // Get total sales
             $sql = "SELECT COALESCE(SUM(total_amount), 0) as total_sales FROM transactions";
             $result = $conn->query($sql);
+            if ($result === false) {
+                die("Error getting total sales: " . $conn->error);
+            }
             $totalSales = $result->fetch_assoc()['total_sales'];
 
-            // Get average sales
+            // Get average sales (per transaction)
             $sql = "SELECT COALESCE(AVG(total_amount), 0) as avg_sales FROM transactions";
             $result = $conn->query($sql);
+            if ($result === false) {
+                die("Error getting average sales: " . $conn->error);
+            }
             $avgSales = $result->fetch_assoc()['avg_sales'];
 
-            // Get net sales (total sales - total costs)
-            $sql = "SELECT 
-                COALESCE((SELECT SUM(total_amount) FROM transactions), 0) -
-                COALESCE((SELECT SUM(cost_price * stock_quantity) FROM products), 0) as net_sales";
+            // Get total discounts
+            $sql = "SELECT COALESCE(SUM(discount), 0) as total_discounts FROM transactions";
             $result = $conn->query($sql);
-            $netSales = $result->fetch_assoc()['net_sales'];
+            if ($result === false) {
+                die("Error getting total discounts: " . $conn->error);
+            }
+            $totalDiscounts = $result->fetch_assoc()['total_discounts'];
+
+            // Calculate net sales (total sales - total discounts)
+            $netSales = $totalSales - $totalDiscounts;
             ?>
             
             <div class="stat-card">

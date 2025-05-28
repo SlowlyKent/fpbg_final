@@ -219,4 +219,24 @@ input, button {
 .unit-select option {
     padding: 10px;
     background-color: white;
+}
+
+#category, #unit_of_measure {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    background: #fff;
+    color: #222;
+    margin-top: 2px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+#category:focus, #unit_of_measure:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 } 

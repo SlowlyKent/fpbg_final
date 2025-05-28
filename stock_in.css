@@ -26,7 +26,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -98,5 +98,52 @@
             }
         }
 
+        /* Style for the category dropdown in stock_in.php */
+        .form-group label[for="category"] {
+            font-weight: 600;
+            color: #1D2B53;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        #category {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #fff;
+            color: #222;
+            margin-top: 2px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        #category:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        #unit_of_measure {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #fff;
+            color: #222;
+            margin-top: 2px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        #unit_of_measure:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
 
         

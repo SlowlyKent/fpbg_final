@@ -102,7 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
 
             <label for="category">Category:</label>
-            <input type="text" id="category" name="category" value="<?= htmlspecialchars($product['category']) ?>" required>
+            <select id="category" name="category" required>
+                <option value="Processed Meat" <?= $product['category'] === 'Processed Meat' ? 'selected' : '' ?>>Processed Meat</option>
+                <option value="Raw Meat" <?= $product['category'] === 'Raw Meat' ? 'selected' : '' ?>>Raw Meat</option>
+                <option value="Fried Snacks" <?= $product['category'] === 'Fried Snacks' ? 'selected' : '' ?>>Fried Snacks</option>
+            </select>
 
             <label for="cost_price">Cost Price:</label>
             <input type="number" step="0.01" id="cost_price" name="cost_price" value="<?= htmlspecialchars($product['cost_price']) ?>" required>

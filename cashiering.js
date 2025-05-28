@@ -177,24 +177,11 @@ function removeItem(index) {
 
 // Update total with discount
 function updateTotal() {
-    const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-    const kilogramInput = document.getElementById('kilogram');
-    const kilogram = kilogramInput ? parseFloat(kilogramInput.value) || 1 : 1;
-    const price = parseFloat(document.getElementById('selectedPrice')?.value) || 0;
-    const unit = document.getElementById('selectedProductId')?.getAttribute('data-unit');
-    let total = 0;
-    if (unit === 'kg' || unit === 'g') {
-        total = quantity * kilogram * price;
-    } else {
-        total = quantity * price;
-    }
-    document.getElementById('totalAmount').textContent = '₱' + total.toFixed(2);
-
-    // Discount logic and total payable
+    let total = parseFloat(document.getElementById("totalAmount")?.innerText) || 0;
     let discount = parseFloat(document.getElementById("discount")?.value) || 0;
-    let discountedTotal = total - (total * (discount / 100));
-    document.getElementById("payableAmount").innerText = discountedTotal.toFixed(2);
-
+    let discountAmount = (total * (discount / 100));
+    let netSale = total - discountAmount;
+    document.getElementById("payableAmount").innerText = netSale.toFixed(2);
     updateChange();
 }
 
@@ -455,8 +442,9 @@ function getNotificationTypeClass(message) {
     function updateTotal() {
         let discount = parseFloat(document.getElementById("discount")?.value) || 0;
         let total = parseFloat(document.getElementById("totalAmount")?.innerText) || 0;
-        let discountedTotal = total - (total * (discount / 100));
-        document.getElementById("payableAmount").innerText = discountedTotal.toFixed(2);
+        let discountAmount = (total * (discount / 100));
+        let netSale = total - discountAmount;
+        document.getElementById("payableAmount").innerText = netSale.toFixed(2);
         updateChange();
     }
 

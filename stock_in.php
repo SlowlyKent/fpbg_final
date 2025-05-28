@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_name = htmlspecialchars(trim($_POST['product_name']));
     $brand = htmlspecialchars(trim($_POST['brand']));
     $input_quantity = floatval(htmlspecialchars(trim($_POST['stock_quantity'])));
-    // Convert grams to kilograms (if input is less than 1, assume it's in grams)
-    $stock_quantity = $input_quantity < 1 ? $input_quantity * 1000 : $input_quantity;
     $unit_of_measure = htmlspecialchars(trim($_POST['unit_of_measure']));
+    // Convert grams to kilograms only if the unit is grams
+    $stock_quantity = $unit_of_measure === 'g' ? $input_quantity / 1000 : $input_quantity;
     $category = htmlspecialchars(trim($_POST['category']));
     $cost_price = (float) htmlspecialchars(trim($_POST['cost_price']));
     $selling_price = (float) htmlspecialchars(trim($_POST['selling_price']));
@@ -99,8 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Create notification for new product
-        $notif_msg = "NEW PRODUCT ADDED: {$product_name}\n";
-        $notif_msg .= "• Initial Stock: {$stock_quantity} {$unit_of_measure}\n";
+        $notif_msg = " NEW PRODUCT ADDED: {$product_name}\n";
+        $notif_msg .= "• Initial Stock: ";
+        if ($unit_of_measure === 'kg' || $unit_of_measure === 'g') {
+            $notif_msg .= number_format($stock_quantity, 3);
+        } else {
+            $notif_msg .= number_format($stock_quantity, 0);
+        }
+        $notif_msg .= " {$unit_of_measure}\n";
         $notif_msg .= "• Category: {$category}\n";
         $notif_msg .= "• Selling Price: ₱" . number_format($selling_price, 2);
         
@@ -137,55 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="js/notifications.js"></script>
     <style>
-        .quantity-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .quantity-input-group input[type="number"] {
-            flex: 1;
-        }
-
-        .quantity-input-group select {
-            width: 150px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-            font-size: 14px;
-        }
-
-        .quantity-input-group select:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-
-        #quantityPerUnitGroup {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        #quantityPerUnitGroup label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        #quantityPerUnitGroup input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 5px;
-        }
-
-        #quantityPerUnitGroup input:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
+      
     </style>
 </head>
 
@@ -284,7 +242,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="category">
                                 <i class="fas fa-folder"></i> Category
                             </label>
-                            <input type="text" id="category" name="category" required />
+                            <select id="category" name="category" required>
+                                <option value="Processed Meat">Processed Meat</option>
+                                <option value="Raw Meat">Raw Meat</option>
+                                <option value="Fried Snacks">Fried Snacks</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
