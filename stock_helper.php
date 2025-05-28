@@ -22,7 +22,7 @@ function getAverageDailySales($conn, $product_id, $days = 30) {
     return floatval($row['avg_daily_sales']);
 }
 
-function getStockStatus($quantity, $avgDailySales, $unit_of_measure = null) {
+function getStockStatus($quantity, $unit_of_measure = null) {
     // Define thresholds
     $criticalThreshold = 2; // Days of inventory
     $lowThreshold = 7; // Days of inventory
@@ -55,18 +55,6 @@ function getStockStatus($quantity, $avgDailySales, $unit_of_measure = null) {
     }
     
     if ($quantityKg < $quantityThresholdKg) {
-        return 'low stock';
-    }
-    
-    if ($avgDailySales <= 0) {
-        return 'in stock';
-    }
-    
-    $daysOfInventory = $quantityKg / $avgDailySales;
-    
-    if ($daysOfInventory <= $criticalThreshold) {
-        return 'critical stock';
-    } elseif ($daysOfInventory <= $lowThreshold) {
         return 'low stock';
     }
     
@@ -118,7 +106,7 @@ function updateStockStatus($conn, $product_id) {
     $avgDailySales = getAverageDailySales($conn, $product_id);
     
     // Get new status
-    $status = getStockStatus($product['stock_quantity'], $avgDailySales);
+    $status = getStockStatus($product['stock_quantity']);
     
     // Update status in database
     $stmt = $conn->prepare("UPDATE products SET stock_status = ? WHERE product_id = ?");

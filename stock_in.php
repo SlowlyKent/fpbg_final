@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <li><a href="dashboard.php">Dashboard</a></li>
             <li><a href="inventory.php">Inventory</a></li>
             <li><a href="stock_in.php">Stock In</a></li>
-            <li><a href="stock_out.php">Stock Out</a></li>
+            <li><a href="stock_out.php">Transactions</a></li>
             <li><a href="create.php">Create User</a></li>
             <li><a href="read.php">View Users</a></li>
             <li><a href="check_expiration.php">Check Expiration Products</a></li>

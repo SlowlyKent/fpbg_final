@@ -1,7 +1,6 @@
 <?php
 include 'connect.php'; 
 session_start();
-include 'connect.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
@@ -14,7 +13,6 @@ if (!$isAdmin) {
     echo "<script>alert('Permission Denied'); window.location.href='read.php';</script>";
     exit();
 }
-
 
 if (isset($_GET['user_id'])) {
     $user_id = $_GET['user_id'];
@@ -45,19 +43,28 @@ if (isset($_GET['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User</title>
     <link rel="stylesheet" href="update.css">
-    <h1 class="logo">FPBG<br> STOCK</h1> 
+    <script>
+        function closeModal() {
+            window.location.href = 'read.php';
+        }
+    </script>
 </head>
 <body>
-    <div class="edit-container">
-    <h2>Edit User</h2>
-    <form action="update_process.php" method="POST">
-        <label>Update Name:</label>
-        <input type="hidden" name="user_id" value="<?= $user_id; ?>">
-        <input type="text" name="username" value="<?= $user['username']; ?>" required>
-        <label>New Password (leave blank to keep current password):</label>
-        <input type="password" name="new_password" placeholder="Enter new password">
+    <div class="container">
+        <div class="modal-header">
+            <h1>Edit User</h1>
+            <button onclick="closeModal()" class="close-btn">&times;</button>
+        </div>
+        <form action="update_process.php" method="POST">
+            <label for="username">Update Name:</label>
+            <input type="hidden" name="user_id" value="<?= $user_id; ?>">
+            <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']); ?>" required>
 
-        <button type="submit">Update</button> 
-    </form>
+            <label for="new_password">New Password (leave blank to keep current password):</label>
+            <input type="password" id="new_password" name="new_password" placeholder="Enter new password">
+
+            <button type="submit">Update</button> 
+        </form>
+    </div>
 </body>
 </html>

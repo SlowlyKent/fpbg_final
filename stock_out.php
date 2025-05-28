@@ -13,7 +13,7 @@ if ($conn->connect_error) {
 
 // Fetch transactions from the database with brand information
 $sql = "
-    SELECT st.transaction_id, st.product_id, st.quantity, st.created_at, p.brand, p.product_name, p.unit_of_measure, t.amount_paid
+    SELECT st.transaction_id, st.product_id, st.quantity, st.created_at, st.transaction_type, p.brand, p.product_name, p.unit_of_measure, t.amount_paid
     FROM stock_transactions st
     JOIN products p ON st.product_id = p.product_id
     JOIN transactions t ON st.transaction_id = t.transaction_id
@@ -32,10 +32,15 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Get total sales
-$sql = "SELECT COALESCE(SUM(total_amount), 0) as total_sales FROM transactions";
+// Get total sales (gross revenue)
+$sql = "SELECT 
+    COALESCE(SUM(total_amount), 0) as gross_revenue,
+    COALESCE(SUM(total_amount * (discount/100)), 0) as total_discounts
+    FROM transactions";
 $result = $conn->query($sql);
-$totalSales = $result->fetch_assoc()['total_sales'];
+$row = $result->fetch_assoc();
+$grossRevenue = $row['gross_revenue'];
+$totalDiscounts = $row['total_discounts'];
 
 // Get COGS (cost of goods sold) from stock_transactions
 $sql = "SELECT COALESCE(SUM(st.quantity * p.cost_price), 0) as cogs
@@ -48,8 +53,8 @@ if ($result === false) {
 }
 $cogs = $result->fetch_assoc()['cogs'];
 
-// Get net sales (total sales - COGS)
-$netSales = $totalSales - $cogs;
+// Calculate net sales (gross revenue - discounts - COGS)
+$netSales = $grossRevenue - $totalDiscounts - $cogs;
 
 $conn->close();
 ?>
@@ -59,7 +64,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stock Out</title>
+    <title>Transactions</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="stock_out.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -80,7 +85,7 @@ $conn->close();
                 <li><a href="dashboard.php">Dashboard</a></li>
                 <li><a href="inventory.php">Inventory</a></li>
                 <li><a href="stock_in.php">Stock In</a></li>
-                <li><a href="stock_out.php">Stock Out</a></li>
+                <li><a href="stock_out.php">Transactions</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
                 <li><a href="check_expiration.php">Check Expiration Products</a></li>
@@ -105,7 +110,7 @@ $conn->close();
 
         <div class="stock-out-container">
             <div class="stock-out-header">
-                <h2 class="stock-out-title">Stock Out Transactions</h2>
+                <h2 class="stock-out-title">Transactions</h2>
             </div>
 
             <div class="search-bar">
@@ -120,6 +125,10 @@ $conn->close();
                         <th class="sortable" data-sort="brand"><i class="fas fa-tag"></i> Brand <i class="fas fa-sort"></i></th>
                         <th><i class="fas fa-cubes"></i> Quantity</th>
                         <th><i class="fas fa-ruler"></i> Unit of Measure</th>
+                        <th class="sortable" data-sort="type">
+                            Transaction Type
+                            <i class="fas fa-sort"></i>
+                        </th>
                         <th class="sortable" data-sort="amount"><i class="fas fa-money-bill-wave"></i> Amount Paid <i class="fas fa-sort"></i></th>
                         <th class="sortable desc" data-sort="date"><i class="fas fa-calendar"></i> Transaction Date <i class="fas fa-sort"></i></th>
                         <th>Actions</th>
@@ -128,18 +137,18 @@ $conn->close();
                 <tbody>
                     <?php if (empty($transactions)): ?>
                         <tr>
-                            <td colspan="7" class="empty-message">No transactions found</td>
+                            <td colspan="8" class="empty-message">No transactions found</td>
                         </tr>
                     <?php else: ?>
         <?php if (isset($_SESSION['success_message'])): ?>
             <tr>
-                <td colspan="7" class="success-message"><?php echo htmlspecialchars($_SESSION['success_message']); ?></td>
+                <td colspan="8" class="success-message"><?php echo htmlspecialchars($_SESSION['success_message']); ?></td>
             </tr>
             <?php unset($_SESSION['success_message']); ?>
         <?php endif; ?>
         <?php if (isset($_GET['error'])): ?>
             <tr>
-                <td colspan="7" class="error-message"><?php echo htmlspecialchars($_GET['error']); ?></td>
+                <td colspan="8" class="error-message"><?php echo htmlspecialchars($_GET['error']); ?></td>
             </tr>
         <?php endif; ?>
         <?php foreach ($transactions as $row): ?>
@@ -158,22 +167,28 @@ $conn->close();
                                             // Convert grams to kilograms for display
                                             $quantity = $quantity / 1000;
                                             echo number_format($quantity, 3);
-                                            echo ' kg';
                                         } elseif ($unit === 'kg') {
                                             // If quantity is large, assume it's in grams and convert
                                             if ($quantity > 100) {
                                                 $quantity = $quantity / 1000;
                                             }
                                             echo number_format($quantity, 3);
-                                            echo ' kg';
                                         } else {
                                             echo number_format($quantity, 0);
-                                            echo ' ' . htmlspecialchars($unit);
                                         }
                                     ?>
                                 </td>
                         <td class="unit-o-measure">
                             <?php echo htmlspecialchars($row['unit_of_measure']); ?>
+                        </td>
+                        <td>
+                            <?php
+                                if (isset($row['transaction_type'])) {
+                                    echo $row['transaction_type'] === 'stock_in' ? 'Stock In' : ($row['transaction_type'] === 'stock_out' ? 'Stock Out' : htmlspecialchars($row['transaction_type']));
+                                } else {
+                                    echo 'Stock Out';
+                                }
+                            ?>
                         </td>
                         <td class="transaction-amount">₱<?php echo number_format($row['amount_paid'], 2); ?></td>
                         <td class="transaction-date">
@@ -274,8 +289,9 @@ $conn->close();
         const columnMap = {
             'product': 2,
             'brand': 3,
-            'amount': 5,
-            'date': 6
+            'type': 6,
+            'amount': 7,
+            'date': 8
         };
         return columnMap[column] || 1;
     }

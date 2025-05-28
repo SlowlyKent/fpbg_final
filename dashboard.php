@@ -36,7 +36,7 @@ include('connect.php');
             <li><a href="dashboard.php">Dashboard</a></li>
             <li><a href="inventory.php">Inventory</a></li>
             <li><a href="stock_in.php">Stock In</a></li>
-            <li><a href="stock_out.php">Stock Out</a></li>
+            <li><a href="stock_out.php">Transactions</a></li>
             <li><a href="create.php">Create User</a></li>
             <li><a href="read.php">View Users</a></li>
             <li><a href="check_expiration.php">Check Expiration Products</a></li>
@@ -67,13 +67,29 @@ include('connect.php');
 
         <div id="statCards" class="stat-cards">
             <?php
-            // Get total sales
-            $sql = "SELECT COALESCE(SUM(total_amount), 0) as total_sales FROM transactions";
+            // Get gross revenue and total discounts
+            $sql = "SELECT 
+                COALESCE(SUM(total_amount), 0) as gross_revenue,
+                COALESCE(SUM(total_amount * (discount/100)), 0) as total_discounts
+                FROM transactions";
             $result = $conn->query($sql);
             if ($result === false) {
-                die("Error getting total sales: " . $conn->error);
+                die("Error getting sales data: " . $conn->error);
             }
-            $totalSales = $result->fetch_assoc()['total_sales'];
+            $row = $result->fetch_assoc();
+            $grossRevenue = $row['gross_revenue'];
+            $totalDiscounts = $row['total_discounts'];
+
+            // Get COGS
+            $sql = "SELECT COALESCE(SUM(st.quantity * p.cost_price), 0) as cogs
+                    FROM stock_transactions st
+                    JOIN products p ON st.product_id = p.product_id
+                    WHERE st.transaction_type = 'stock_out'";
+            $result = $conn->query($sql);
+            if ($result === false) {
+                die("Error getting COGS: " . $conn->error);
+            }
+            $cogs = $result->fetch_assoc()['cogs'];
 
             // Get average sales (per transaction)
             $sql = "SELECT COALESCE(AVG(total_amount), 0) as avg_sales FROM transactions";
@@ -83,21 +99,13 @@ include('connect.php');
             }
             $avgSales = $result->fetch_assoc()['avg_sales'];
 
-            // Get total discounts
-            $sql = "SELECT COALESCE(SUM(discount), 0) as total_discounts FROM transactions";
-            $result = $conn->query($sql);
-            if ($result === false) {
-                die("Error getting total discounts: " . $conn->error);
-            }
-            $totalDiscounts = $result->fetch_assoc()['total_discounts'];
-
-            // Calculate net sales (total sales - total discounts)
-            $netSales = $totalSales - $totalDiscounts;
+            // Calculate net sales (gross revenue - discounts - COGS)
+            $netSales = $grossRevenue - $totalDiscounts - $cogs;
             ?>
             
             <div class="stat-card">
-                <h3>₱<?php echo number_format($totalSales, 2); ?></h3>
-                <p>Total Sales</p>
+                <h3>₱<?php echo number_format($grossRevenue, 2); ?></h3>
+                <p>Gross Revenue</p>
             </div>
             <div class="stat-card">
                 <h3>₱<?php echo number_format($avgSales, 2); ?></h3>

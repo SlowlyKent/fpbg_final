@@ -28,8 +28,8 @@ try {
     $grossRevenue = (float)$row['gross_revenue'];
     $totalDiscounts = (float)$row['total_discounts'];
 
-    // Calculate net sales (gross revenue - discounts)
-    $netSales = $grossRevenue - $totalDiscounts;
+    // Calculate net sales (gross revenue - discounts - COGS)
+    $netSales = $grossRevenue - $totalDiscounts - $totalCost;
 
     // Get monthly sales for the last 4 months
     $sql = "SELECT 
@@ -57,7 +57,7 @@ try {
 
     echo json_encode([
         'totalCost' => $totalCost,
-        'totalRevenue' => $netSales, // Changed to use net sales for cost vs revenue comparison
+        'totalRevenue' => $netSales,
         'grossRevenue' => $grossRevenue,
         'netSales' => $netSales,
         'totalDiscounts' => $totalDiscounts,

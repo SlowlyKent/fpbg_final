@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insert low stock notification if needed
             if ($newStatus === "low stock") {
                 $notifMessage = "Stock is running low for product: " . $product_id;
-                create_notification($conn, $_SESSION['user_id'], $notifMessage);
+               
             }
 
             // Insert transaction details if transaction ID is provided
@@ -116,21 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // For GET requests - display the inventory page
 // Query to get inventory data with additional stock information
 $query = "
-    SELECT p.*,
-           COALESCE(
-               (SELECT SUM(
-                    CASE 
-                        WHEN p.unit_of_measure = 'g' THEN st.quantity / 1000
-                        ELSE st.quantity
-                    END
-                )
-                FROM stock_transactions st
-                JOIN products p ON st.product_id = p.product_id
-                WHERE st.product_id = p.product_id
-                AND st.transaction_type = 'stock_out'
-                AND st.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-               ), 0
-           ) as monthly_sales
+    SELECT p.*
     FROM products p
 ";
 $result = $conn->query($query);
@@ -161,7 +147,7 @@ $result = $conn->query($query);
                 <li><a href="dashboard.php">Dashboard</a></li>
                 <li><a href="inventory.php">Inventory</a></li>
                 <li><a href="stock_in.php">Stock In</a></li>
-                <li><a href="stock_out.php">Stock Out</a></li>
+                <li><a href="stock_out.php">Transactions</a></li>
                 <li><a href="create.php">Create User</a></li>
                 <li><a href="read.php">View Users</a></li>
                 <li><a href="check_expiration.php">Check Expiration Products</a></li>
@@ -224,10 +210,9 @@ $result = $conn->query($query);
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <?php
                                 $stockQuantity = floatval($row['stock_quantity']);
-                                $avgDailySales = $row['monthly_sales'] / 30; // Calculate average daily sales
                                 
                                 // Get stock status using helper function, pass unit_of_measure
-                                $status = getStockStatus($stockQuantity, $avgDailySales, $row['unit_of_measure']);
+                                $status = getStockStatus($stockQuantity, $row['unit_of_measure']);
                                 
                                 // Determine CSS class and display text
                                 switch ($status) {
@@ -261,12 +246,14 @@ $result = $conn->query($query);
                                             // For grams, show in grams
                                             echo number_format($quantity * 1000, 0) . 'g';
                                         } elseif ($unit === 'kg') {
-                                            // For kilograms, show in kg with original decimal places
-                                            $decimalPlaces = strlen(substr(strrchr($quantity, "."), 1));
-                                            echo number_format($quantity, $decimalPlaces) . 'kg';
-                                        } elseif ($unit === 'box' || $unit === 'pack') {
-                                            // For boxes and packs, show the unit
+                                            // For kilograms, show with 3 decimal places
+                                            echo number_format($quantity, 3);
+                                        } elseif ($unit === 'box') {
+                                            // For boxes, show the unit
                                             echo number_format($quantity, 0) . ' ' . $unit;
+                                        } elseif ($unit === 'pack') {
+                                            // For packs, show just the number
+                                            echo number_format($quantity, 0);
                                         } else {
                                             // For pieces and other units
                                             echo number_format($quantity, 0) . ' ' . $unit;
@@ -278,12 +265,6 @@ $result = $conn->query($query);
                                 <td>₱<?= number_format($row['selling_price'], 2) ?></td>
                                 <td class="status-cell <?= $statusClass ?>">
                                     <?= $displayStatus ?>
-                                    <?php if ($avgDailySales > 0): ?>
-                                        <br>
-                                        <small class="avg-sales">
-                                            Avg. Daily Sales: <?= number_format($avgDailySales, 1) ?>
-                                        </small>
-                                    <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars($row['category']) ?></td>
                                 <td>

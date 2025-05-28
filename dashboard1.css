@@ -6,7 +6,7 @@
             color: black; /* Change link color to black */
         }
         a:-webkit-any-link {
-            color: black; /* Change link color to black */
+            color: white; /* Change link color to black */
         }
         .refresh-btn {
             padding: 10px 20px;

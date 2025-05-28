@@ -53,25 +53,49 @@
             background-color: #f5f5f5;
         }
 
-        /* Add sorting styles */
+        /* Enhanced sortable column design with single arrow */
         .sortable {
             cursor: pointer;
             user-select: none;
+            position: relative;
+            transition: background 0.2s, color 0.2s;
+            padding-right: 28px; /* space for icon */
+            border-radius: 6px 6px 0 0;
+        }
+
+        .sortable:hover,
+        .sortable.asc,
+        .sortable.desc {
+            background: #e3eefd;
+            color: #003366;
+            box-shadow: 0 2px 8px rgba(0,51,102,0.07);
         }
 
         .sortable i {
             margin-left: 5px;
             color: #999;
+            font-size: 1.1em;
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            transition: color 0.2s, transform 0.2s;
         }
 
-        .sortable.asc i::before {
-            content: "\f0de"; /* fa-sort-up */
+        .sortable.asc i {
             color: #003366;
+            transform: translateY(-50%) rotate(180deg); /* Up arrow */
         }
 
+        .sortable.desc i {
+            color: #003366;
+            transform: translateY(-50%) rotate(0deg); /* Down arrow */
+        }
+
+        /* Remove old double arrow styles */
+        .sortable.asc i::before,
         .sortable.desc i::before {
-            content: "\f0dd"; /* fa-sort-down */
-            color: #003366;
+            content: none;
         }
 
         .transaction-amount {
