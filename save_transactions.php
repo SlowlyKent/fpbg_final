@@ -79,9 +79,36 @@ try {
         $productId = $item['product_id'];
         $quantity = floatval($item['quantity']);
         $kilogram = floatval($item['kilogram']);
-        $effectiveQuantity = $quantity * $kilogram;
         
-        if (!$stockTransactionStmt->bind_param("ssd", $transactionId, $productId, $effectiveQuantity)) {
+        // Get the unit of measure and current stock for this product
+        $productQuery = "SELECT unit_of_measure, stock_quantity, product_name FROM products WHERE product_id = ?";
+        $productStmt = $conn->prepare($productQuery);
+        if ($productStmt === false) {
+            throw new Exception("Failed to prepare product query: " . $conn->error);
+        }
+        $productStmt->bind_param("s", $productId);
+        $productStmt->execute();
+        $productResult = $productStmt->get_result();
+        $product = $productResult->fetch_assoc();
+        
+        // Calculate effective quantity based on unit of measure
+        $effectiveQuantity = $quantity;
+        $displayQuantity = $quantity * $kilogram; // This is for display in transactions
+        
+        if ($product['unit_of_measure'] === 'g') {
+            $effectiveQuantity = $quantity * $kilogram;
+        } else if ($product['unit_of_measure'] === 'kg') {
+            // For kilograms, use the exact kilogram value entered
+            $effectiveQuantity = $kilogram;
+        }
+        
+        // Check if there's enough stock
+        if ($effectiveQuantity > $product['stock_quantity']) {
+            throw new Exception("Insufficient stock for {$product['product_name']}. Available: {$product['stock_quantity']} {$product['unit_of_measure']}, Requested: {$effectiveQuantity} {$product['unit_of_measure']}");
+        }
+        
+        // Insert into stock_transactions with the display quantity
+        if (!$stockTransactionStmt->bind_param("ssd", $transactionId, $productId, $displayQuantity)) {
             throw new Exception("Failed to bind stock transaction parameters: " . $stockTransactionStmt->error);
         }
         

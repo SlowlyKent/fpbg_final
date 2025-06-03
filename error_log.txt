@@ -1,0 +1,7 @@
+[03-Jun-2025 13:30:05 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 564 kg
+[03-Jun-2025 13:30:24 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 564 kg
+[03-Jun-2025 13:32:05 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 890 kg
+[03-Jun-2025 13:33:07 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 678 kg
+[03-Jun-2025 13:36:28 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 675 kg
+[03-Jun-2025 13:37:51 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 675 kg
+[03-Jun-2025 13:39:05 Europe/Berlin] Transaction Error: Insufficient stock for Chicken. Available: 123.000 kg, Requested: 678 kg
