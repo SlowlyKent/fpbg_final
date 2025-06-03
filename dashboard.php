@@ -61,10 +61,6 @@ include('connect.php');
             </div>
         </div>
 
-        <div class="search-bar" id="searchBar">
-            <input type="text" placeholder="Search">
-        </div>
-
         <div id="statCards" class="stat-cards">
             <?php
             // Get gross revenue and total discounts
@@ -106,6 +102,10 @@ include('connect.php');
             <div class="stat-card">
                 <h3>₱<?php echo number_format($grossRevenue, 2); ?></h3>
                 <p>Gross Revenue</p>
+            </div>
+            <div class="stat-card">
+                <h3>₱<?php echo number_format($totalDiscounts, 2); ?></h3>
+                <p>Total Discounts</p>
             </div>
             <div class="stat-card">
                 <h3>₱<?php echo number_format($avgSales, 2); ?></h3>
